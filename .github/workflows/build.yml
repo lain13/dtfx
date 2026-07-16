@@ -1,0 +1,27 @@
+name: build
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: windows-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up NuGet
+        uses: NuGet/setup-nuget@v3
+
+      - name: Set up MSBuild
+        uses: microsoft/setup-msbuild@v3
+
+      - name: Restore packages
+        run: nuget restore IF.Batch.sln
+
+      - name: Build solution
+        run: msbuild IF.Batch.sln /m /p:Configuration=Release /p:Platform="Any CPU"
+
+      - name: Run smoke tests
+        run: .\tests\DTFX.SmokeTests\bin\Release\DTFX.SmokeTests.exe

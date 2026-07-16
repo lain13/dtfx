@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+/*******************************************************************************
+* ファイル名:SAMPLE.XML
+* 概要:汎用データ連携サンプルアプリケーション
+*
+* 履歴:
+*   バージョン      日付        作成者      内容
+*   25.1-001-01     2013/08/02  姜  恵遠    新規作成
+*   25.1-001-02     2013/10/07  姜　恵遠    25年度2期
+*   21.3-001-01     2021/07/05  姜　恵遠    Biz-A Step1.5対応
+*   23.1-001-01     2023/02/15  姜　恵遠    PostgreSQL対応
+*   24.1-001-01     2024/03/27  姜　恵遠    PostgreSQL Bulk Insert対応
+*
+*******************************************************************************/
+-->
+<Application xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xsi:noNamespaceSchemaLocation="../XMLSchema/Application.xsd">
+    <!-- ZIP圧縮ファイルを作成する -->
+    <ZipArchive filename="OUTPUT.zip" password="1234">
+      <AddFile filenamePattern="${outputdirectory}\*AD_SYSTEMUSER_*" deletedOnArchived="true" />
+      <AddFile filenamePattern="${outputdirectory}\*.log" deletedOnArchived="true" />
+    </ZipArchive>
+    <!-- MSSQLデータ取得処理を実行する -->
+    <SqlSelect dataSource="mssql_datasource1" toFile="file_name.csv" toVariable="variable_name" toTable="local_tablename">
+        <![CDATA[
+        SELECT 'HELLOWORLD' AS COL1, 100 AS COL2, GETDATE() AS COL3 FROM MSSQL_TABLE
+        ]]>
+    </SqlSelect>
+
+    <!-- MSSQLデータ登録処理を実行する -->
+    <SqlInsert dataSource="mssql_datasource1" toVariable="variable_name">
+        <![CDATA[
+        INSERT INTO MSSQL_TABLE (COL1, COL2, COL3) VALUES ('HELLOWORLD', 100, GETDATE())
+        ]]>
+    </SqlInsert>
+
+    <!-- MSSQLデータ更新処理を実行する -->
+    <SqlUpdate dataSource="mssql_datasource1" toVariable="variable_name">
+        <![CDATA[
+        UPDATE MSSQL_TABLE SET COL1 = 'HELLOWORLD', COL2=100, COL3=GETDATE() WHERE COL1 = 'BYEBYE'
+        ]]>
+    </SqlUpdate>
+
+    <!-- MSSQLデータ削除処理を実行する -->
+    <SqlDelete dataSource="mssql_datasource1" toVariable="variable_name">
+        <![CDATA[
+        DELETE FROM MSSQL_TABLE WHERE COL1 = 'HELLOWORLD'
+        ]]>
+    </SqlDelete>
+
+	<!-- MSSQLデータ一括登録処理を実行する -->
+	<SqlServerBulkInsertFromSqlServer fromDataSource="mssql_datasource1" toDataSource="mssql_datasource2" toTable="MSSQL_TABLE">
+		SELECT * FROM MSSQL_TABLE WHERE COL1 = 'HELLOWORLD'
+	</SqlServerBulkInsertFromSqlServer>
+
+	<!-- MSSQLデータ一括登録処理を実行する -->
+	<SqlServerBulkInsertFromOracle fromDataSource="oracle_datasource1" toDataSource="mssql_datasource1" toTable="MSSQL_TABLE">
+		SELECT * FROM ORACLE_TABLE WHERE COL1 = 'HELLOWORLD'
+	</SqlServerBulkInsertFromOracle>
+
+	<!-- Oracleデータ取得処理を実行する -->
+    <OracleSelect dataSource="oracle_datasource1" toFile="file_name.csv" toVariable="variable_name" toTable="local_tablename">
+        <![CDATA[
+        SELECT 'HELLOWORLD' AS COL1, 100 AS COL2, GETDATE() AS COL3 FROM ORACLE_TABLE
+        ]]>
+    </OracleSelect>
+
+    <!-- Oracleデータ登録処理を実行する -->
+    <OracleInsert dataSource="oracle_datasource1" toVariable="variable_name">
+        <![CDATA[
+        INSERT INTO ORACLE_TABLE (COL1, COL2, COL3) VALUES ('HELLOWORLD', 100, GETDATE())
+        ]]>
+    </OracleInsert>
+
+    <!-- Oracleデータ更新処理を実行する -->
+    <OracleUpdate dataSource="oracle_datasource1" toVariable="variable_name">
+        <![CDATA[
+        UPDATE ORACLE_TABLE SET COL1 = 'HELLOWORLD', COL2=100, COL3=GETDATE() WHERE COL1 = 'BYEBYE'
+        ]]>
+    </OracleUpdate>
+
+    <!-- Oracleデータ削除処理を実行する -->
+    <OracleDelete dataSource="oracle_datasource1" toVariable="variable_name">
+        <![CDATA[
+        DELETE FROM ORACLE_TABLE WHERE COL1 = 'HELLOWORLD'
+        ]]>
+    </OracleDelete>
+
+	<!-- Oracleデータ一括登録処理を実行する -->
+	<OracleBulkInsertFromSqlServer fromDataSource="mssql_datasource1" toDataSource="oracle_datasource1" toTable="ORACLE_TABLE">
+		SELECT * FROM MSSQL_TABLE WHERE COL1 = 'HELLOWORLD'
+	</OracleBulkInsertFromSqlServer>
+
+	<!-- Oracleデータ一括登録処理を実行する -->
+	<OracleBulkInsertFromOracle fromDataSource="oracle_datasource1" toDataSource="oracle_datasource2" toTable="ORACLE_TABLE">
+		SELECT * FROM ORACLE_TABLE WHERE COL1 = 'HELLOWORLD'
+	</OracleBulkInsertFromOracle>
+
+  <!-- PostgreSqlデータ取得処理を実行する -->
+  <PostgreSqlSelect dataSource="pgsql_datasource1" toFile="file_name.csv" toVariable="variable_name" toTable="local_tablename">
+    <![CDATA[
+        SELECT 'HELLOWORLD' AS COL1, 100 AS COL2, GETDATE() AS COL3 FROM POSTGRESQL_TABLE
+        ]]>
+  </PostgreSqlSelect>
+
+  <!-- PostgreSqlデータ登録処理を実行する -->
+  <PostgreSqlInsert dataSource="pgsql_datasource1" toVariable="variable_name">
+    <![CDATA[
+        INSERT INTO POSTGRESQL_TABLE (COL1, COL2, COL3) VALUES ('HELLOWORLD', 100, GETDATE())
+        ]]>
+  </PostgreSqlInsert>
+
+  <!-- PostgreSqlデータ更新処理を実行する -->
+  <PostgreSqlUpdate dataSource="pgsql_datasource1" toVariable="variable_name">
+    <![CDATA[
+        UPDATE POSTGRESQL_TABLE SET COL1 = 'HELLOWORLD', COL2=100, COL3=GETDATE() WHERE COL1 = 'BYEBYE'
+        ]]>
+  </PostgreSqlUpdate>
+
+  <!-- PostgreSqlデータ削除処理を実行する -->
+  <PostgreSqlDelete dataSource="pgsql_datasource1" toVariable="variable_name">
+    <![CDATA[
+        DELETE FROM POSTGRESQL_TABLE WHERE COL1 = 'HELLOWORLD'
+        ]]>
+  </PostgreSqlDelete>
+
+  <!-- PostgreSqlデータ一括登録処理を実行する -->
+  <PostgreSqlBulkInsertFromSqlServer fromDataSource="mssql_datasource1" toDataSource="pgsql_datasource1" toTable="POSTGRESQL_TABLE">
+    SELECT * FROM MSSQL_TABLE WHERE COL1 = 'HELLOWORLD'
+  </PostgreSqlBulkInsertFromSqlServer>
+
+  <!-- PostgreSqlデータ一括登録処理を実行する -->
+  <PostgreSqlBulkInsertFromOracle fromDataSource="oracle_datasource1" toDataSource="pgsql_datasource1" toTable="POSTGRESQL_TABLE">
+    SELECT * FROM ORACLE_TABLE WHERE COL1 = 'HELLOWORLD'
+  </PostgreSqlBulkInsertFromOracle>
+
+  <!-- 一時DBデータ取得処理を実行する -->
+    <LocalDBSelect toFile="file_name.csv" toVariable="variable_name" toTable="local_new_tablename">
+        <![CDATA[
+        SELECT 'HELLOWORLD' AS COL1, 100 AS COL2, GETDATE() AS COL3 FROM ${local_tablename}
+        ]]>
+    </LocalDBSelect>
+
+    <!-- 一時DBデータ登録処理を実行する -->
+    <LocalDBInsert toVariable="variable_name">
+        <![CDATA[
+        INSERT INTO ${local_tablename} (COL1, COL2, COL3) VALUES ('HELLOWORLD', 100, GETDATE())
+        ]]>
+    </LocalDBInsert>
+
+    <!-- 一時DBデータ更新処理を実行する -->
+    <LocalDBUpdate toVariable="variable_name">
+        <![CDATA[
+        UPDATE ${local_tablename} SET COL1 = 'HELLOWORLD', COL2=100, COL3=GETDATE() WHERE COL1 = 'BYEBYE'
+        ]]>
+    </LocalDBUpdate>
+
+    <!-- 一時DBデータ削除処理を実行する -->
+    <LocalDBDelete toVariable="variable_name">
+        <![CDATA[
+        DELETE FROM ${local_tablename} WHERE COL1 = 'HELLOWORLD'
+        ]]>
+    </LocalDBDelete>
+
+    <!-- 条件文処理を実行する ※&&は&amp;&amp;に変更して入力する -->
+    <If test="'${local_variable1}' == 'HELLOWORLD' &amp;&amp; ('${local_variable2}' != 'HELLOWORLD')">
+        <!-- この部分に他のタグを入れることができます。-->
+	</If>
+
+    <!-- ループ処理を実行する -->
+    <ForEach var="csv" fromFile="file_name*.csv.gz" fromVariable="local_variable_name" fromTable="local_tablename">
+        <!-- この部分に他のタグを入れることができます。-->
+    </ForEach>
+
+    <!-- メッセージ出力処理を実行する -->
+    <TraceLog eventType="information" toVariable="local_variable_name">
+        HELLO WORLD!
+        ${sample_setting}
+    </TraceLog>
+
+    <!-- 終了処理を実行する -->
+    <AppExit result="0">
+        BYE BYE!
+    </AppExit>
+
+	<!-- CSVファイルをロードする -->
+	<LoadCSV fromFile="CSV_FILE_NAME*.csv" hasHeaders="false" toVariable="CSV_FILE_LIST" />
+	
+</Application>

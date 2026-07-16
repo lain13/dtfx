@@ -1,0 +1,742 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+/*******************************************************************************
+* ファイル名:Application.xsd
+* 概要:汎用データ連携XML定義ファイル(XML Schema Definition)
+*
+* 履歴:
+*   バージョン      日付        作成者      内容
+*   25.1-001-01     2013/08/02  姜  恵遠    新規作成
+*   23.1-001-01     2023/02/15  姜　恵遠    PostgreSQL対応
+*   24.1-001-01     2024/03/27  姜　恵遠    PostgreSQL Bulk Insert対応
+*
+*******************************************************************************/
+-->
+<xs:schema xmlns:b="http://schemas.microsoft.com/BizTalk/2003" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <!-- メイン処理 -->
+  <xs:element name="Application">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <!-- 28.7-001-01 ADD START -->
+        <xs:element ref="SqlSelectScalar" />
+        <!-- 28.7-001-01 ADD END -->
+        <xs:element ref="SqlSelect" />
+        <xs:element ref="SqlInsert" />
+        <xs:element ref="SqlUpdate" />
+        <xs:element ref="SqlDelete" />
+        <xs:element ref="SqlServerBulkInsertFromSqlServer" />
+        <xs:element ref="SqlServerBulkInsertFromOracle" />
+        <!-- 28.7-001-01 ADD START -->
+        <xs:element ref="OracleSelectScalar" />
+        <!-- 28.7-001-01 ADD END -->
+        <xs:element ref="OracleSelect" />
+        <xs:element ref="OracleInsert" />
+        <xs:element ref="OracleUpdate" />
+        <xs:element ref="OracleDelete" />
+        <xs:element ref="OracleBulkInsertFromSqlServer" />
+        <xs:element ref="OracleBulkInsertFromOracle" />
+        <!-- 28.7-001-01 ADD START -->
+        <xs:element ref="LocalDBSelectScalar" />
+        <!-- 28.7-001-01 ADD END -->
+        <xs:element ref="LocalDBSelect" />
+        <xs:element ref="LocalDBInsert" />
+        <xs:element ref="LocalDBUpdate" />
+        <xs:element ref="LocalDBDelete" />
+        <xs:element ref="If" />
+        <xs:element ref="ForEach" />
+        <xs:element ref="TraceLog" />
+        <xs:element ref="AppExit" />
+        <xs:element ref="LoadCSV" />
+        <xs:element ref="ExecuteCommand" />
+        <!-- 21.3-001-01 ADD START -->
+        <xs:element ref="ZipArchive" />
+        <!-- 21.3-001-01 ADD END -->
+        <!-- 23.1-001-01 ADD START -->
+        <xs:element ref="PostgreSqlSelectScalar" />
+        <xs:element ref="PostgreSqlSelect" />
+        <xs:element ref="PostgreSqlInsert" />
+        <xs:element ref="PostgreSqlUpdate" />
+        <xs:element ref="PostgreSqlDelete" />
+        <!-- 23.1-001-01 ADD END -->
+        <xs:element ref="PostgreSqlBulkInsertFromSqlServer" />
+        <xs:element ref="PostgreSqlBulkInsertFromOracle" />
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+  <!-- 21.3-001-01 ADD START -->
+  <!-- Zipファイルを圧縮する -->
+  <xs:element name="ZipArchive">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element ref="AddFile" />
+      </xs:choice>
+      <!-- 圧縮ファイル名 -->
+      <xs:attribute name="filename" type="xs:string" use="required" />
+      <!-- パスワード -->
+      <xs:attribute name="password" type="xs:string" use="optional" />
+      <!-- 上書き -->
+      <xs:attribute name="overwrite" type="xs:boolean" use="optional" default="false" />
+    </xs:complexType>
+  </xs:element>
+  <!-- Zipファイルにファイルを追加する -->
+  <xs:element name="AddFile">
+    <xs:complexType>
+      <!-- ファイル名のパターン -->
+      <xs:attribute name="filenamePattern" type="xs:string" use="required" />
+      <!-- 圧縮ファイルに追加後、削除する -->
+      <xs:attribute name="deletedOnArchived" type="xs:boolean" use="optional" default="false" />
+    </xs:complexType>
+  </xs:element>
+  <!-- 21.3-001-01 ADD END -->
+
+  <!-- 28.7-001-01 ADD START -->
+  <!-- MSSQLデータ取得処理を実行する（1項目のみ取得） -->
+  <xs:element name="SqlSelectScalar">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="xs:string">
+          <!-- データソース -->
+          <xs:attribute name="dataSource" type="xs:string" use="required" />
+          <!-- 変数名 -->
+          <xs:attribute name="toVariable" type="xs:string" use="optional" />
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+  <!-- 28.7-001-01 ADD END -->
+
+  <!-- MSSQLデータ取得処理を実行する -->
+  <xs:element name="SqlSelect">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="xs:string">
+          <!-- データソース -->
+          <xs:attribute name="dataSource" type="xs:string" use="required" />
+          <!-- ファイル出力パス -->
+          <xs:attribute name="toFile" type="xs:string" use="optional" />
+          <!-- 28.7-001-01 ADD START -->
+          <!-- ヘッダ文字列 -->
+          <xs:attribute name="headerString" type="xs:string" use="optional" />
+          <!-- トレーラ文字列 -->
+          <xs:attribute name="trailerString" type="xs:string" use="optional" />
+          <!-- 28.7-001-01 ADD END -->
+          <!-- 変数名 -->
+          <xs:attribute name="toVariable" type="xs:string" use="optional" />
+          <!-- ローカルテーブル名 -->
+          <xs:attribute name="toTable" type="xs:string" use="optional" />
+          <!-- トランザクション -->
+          <xs:attribute name="transaction" type="transactionType" use="optional" default="none" />
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- MSSQLデータ登録理を実行する -->
+  <xs:element name="SqlInsert">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="xs:string">
+          <!-- データソース -->
+          <xs:attribute name="dataSource" type="xs:string" use="required" />
+          <!-- 変数名 -->
+          <xs:attribute name="toVariable" type="xs:string" use="optional" />
+          <!-- トランザクション -->
+          <xs:attribute name="transaction" type="transactionType" use="optional" default="none" />
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- MSSQLデータ更新処理を実行する -->
+  <xs:element name="SqlUpdate">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="xs:string">
+          <!-- データソース -->
+          <xs:attribute name="dataSource" type="xs:string" use="required" />
+          <!-- 変数名 -->
+          <xs:attribute name="toVariable" type="xs:string" use="optional" />
+          <!-- トランザクション -->
+          <xs:attribute name="transaction" type="transactionType" use="optional" default="none" />
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- MSSQLデータ削除処理を実行する -->
+  <xs:element name="SqlDelete">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="xs:string">
+          <!-- データソース -->
+          <xs:attribute name="dataSource" type="xs:string" use="required" />
+          <!-- 変数名 -->
+          <xs:attribute name="toVariable" type="xs:string" use="optional" />
+          <!-- トランザクション -->
+          <xs:attribute name="transaction" type="transactionType" use="optional" default="none" />
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- MSSQLデータ一括登録処理を実行する -->
+  <xs:element name="SqlServerBulkInsertFromSqlServer">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="xs:string">
+          <!-- コピー元データソース -->
+          <xs:attribute name="fromDataSource" type="xs:string" use="required" />
+          <!-- コピー先データソース -->
+          <xs:attribute name="toDataSource" type="xs:string" use="required" />
+          <!-- コピー先テーブル名 -->
+          <xs:attribute name="toTable" type="xs:string" use="required" />
+          <!-- 変数名 -->
+          <xs:attribute name="toVariable" type="xs:string" use="optional" />
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- MSSQLデータ一括登録処理を実行する -->
+  <xs:element name="SqlServerBulkInsertFromOracle">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="xs:string">
+          <!-- コピー元データソース -->
+          <xs:attribute name="fromDataSource" type="xs:string" use="required" />
+          <!-- コピー先データソース -->
+          <xs:attribute name="toDataSource" type="xs:string" use="required" />
+          <!-- コピー先テーブル名 -->
+          <xs:attribute name="toTable" type="xs:string" use="required" />
+          <!-- 変数名 -->
+          <xs:attribute name="toVariable" type="xs:string" use="optional" />
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+  <!-- 28.7-001-01 ADD START -->
+  <!-- Oracleデータ取得処理を実行する（1項目のみ取得） -->
+  <xs:element name="OracleSelectScalar">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="xs:string">
+          <!-- データソース -->
+          <xs:attribute name="dataSource" type="xs:string" use="required" />
+          <!-- 変数名 -->
+          <xs:attribute name="toVariable" type="xs:string" use="optional" />
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+  <!-- 28.7-001-01 ADD END -->
+
+  <!-- Oracleデータ取得処理を実行する -->
+  <xs:element name="OracleSelect">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="xs:string">
+          <!-- データソース -->
+          <xs:attribute name="dataSource" type="xs:string" use="required" />
+          <!-- ファイル出力パス -->
+          <xs:attribute name="toFile" type="xs:string" use="optional" />
+          <!-- 28.7-001-01 ADD START -->
+          <!-- ヘッダ文字列 -->
+          <xs:attribute name="headerString" type="xs:string" use="optional" />
+          <!-- トレーラ文字列 -->
+          <xs:attribute name="trailerString" type="xs:string" use="optional" />
+          <!-- 28.7-001-01 ADD END -->
+          <!-- 変数名 -->
+          <xs:attribute name="toVariable" type="xs:string" use="optional" />
+          <!-- ローカルテーブル名 -->
+          <xs:attribute name="toTable" type="xs:string" use="optional" />
+          <!-- トランザクション -->
+          <xs:attribute name="transaction" type="transactionType" use="optional" default="none" />
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- Oracleデータ登録理を実行する -->
+  <xs:element name="OracleInsert">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="xs:string">
+          <!-- データソース -->
+          <xs:attribute name="dataSource" type="xs:string" use="required" />
+          <!-- 変数名 -->
+          <xs:attribute name="toVariable" type="xs:string" use="optional" />
+          <!-- トランザクション -->
+          <xs:attribute name="transaction" type="transactionType" use="optional" default="none" />
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- Oracleデータ更新処理を実行する -->
+  <xs:element name="OracleUpdate">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="xs:string">
+          <!-- データソース -->
+          <xs:attribute name="dataSource" type="xs:string" use="required" />
+          <!-- 変数名 -->
+          <xs:attribute name="toVariable" type="xs:string" use="optional" />
+          <!-- トランザクション -->
+          <xs:attribute name="transaction" type="transactionType" use="optional" default="none" />
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- Oracleデータ削除処理を実行する -->
+  <xs:element name="OracleDelete">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="xs:string">
+          <!-- データソース -->
+          <xs:attribute name="dataSource" type="xs:string" use="required" />
+          <!-- 変数名 -->
+          <xs:attribute name="toVariable" type="xs:string" use="optional" />
+          <!-- トランザクション -->
+          <xs:attribute name="transaction" type="transactionType" use="optional" default="none" />
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+
+
+  <!-- Oracleデータ一括登録処理を実行する -->
+  <xs:element name="OracleBulkInsertFromSqlServer">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="xs:string">
+          <!-- コピー元データソース -->
+          <xs:attribute name="fromDataSource" type="xs:string" use="required" />
+          <!-- コピー先データソース -->
+          <xs:attribute name="toDataSource" type="xs:string" use="required" />
+          <!-- コピー先テーブル名 -->
+          <xs:attribute name="toTable" type="xs:string" use="required" />
+          <!-- 変数名 -->
+          <xs:attribute name="toVariable" type="xs:string" use="optional" />
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- Oracleデータ一括登録処理を実行する -->
+  <xs:element name="OracleBulkInsertFromOracle">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="xs:string">
+          <!-- コピー元データソース -->
+          <xs:attribute name="fromDataSource" type="xs:string" use="required" />
+          <!-- コピー先データソース -->
+          <xs:attribute name="toDataSource" type="xs:string" use="required" />
+          <!-- コピー先テーブル名 -->
+          <xs:attribute name="toTable" type="xs:string" use="required" />
+          <!-- 変数名 -->
+          <xs:attribute name="toVariable" type="xs:string" use="optional" />
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+  <!-- 28.7-001-01 ADD START -->
+  <!-- 一時DBデータ取得処理を実行する（1項目のみ取得） -->
+  <xs:element name="LocalDBSelectScalar">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="xs:string">
+          <!-- 変数名 -->
+          <xs:attribute name="toVariable" type="xs:string" use="optional" />
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+  <!-- 28.7-001-01 ADD END -->
+
+  <!-- 一時DBデータ取得処理を実行する -->
+  <xs:element name="LocalDBSelect">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="xs:string">
+          <!-- ファイル出力パス -->
+          <xs:attribute name="toFile" type="xs:string" use="optional" />
+          <!-- 28.7-001-01 ADD START -->
+          <!-- ヘッダ文字列 -->
+          <xs:attribute name="headerString" type="xs:string" use="optional" />
+          <!-- トレーラ文字列 -->
+          <xs:attribute name="trailerString" type="xs:string" use="optional" />
+          <!-- 28.7-001-01 ADD END -->
+          <!-- 変数名 -->
+          <xs:attribute name="toVariable" type="xs:string" use="optional" />
+          <!-- ローカルテーブル名 -->
+          <xs:attribute name="toTable" type="xs:string" use="optional" />
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- 一時DBデータ登録理を実行する -->
+  <xs:element name="LocalDBInsert">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="xs:string">
+          <!-- 変数名 -->
+          <xs:attribute name="toVariable" type="xs:string" use="optional" />
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- 一時DBデータ更新処理を実行する -->
+  <xs:element name="LocalDBUpdate">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="xs:string">
+          <!-- 変数名 -->
+          <xs:attribute name="toVariable" type="xs:string" use="optional" />
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- 一時DBデータ削除処理を実行する -->
+  <xs:element name="LocalDBDelete">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="xs:string">
+          <!-- 変数名 -->
+          <xs:attribute name="toVariable" type="xs:string" use="optional" />
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- 23.1-001-01 ADD START -->
+  <!-- PostgreSqlデータ取得処理を実行する（1項目のみ取得） -->
+  <xs:element name="PostgreSqlSelectScalar">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="xs:string">
+          <!-- データソース -->
+          <xs:attribute name="dataSource" type="xs:string" use="required" />
+          <!-- 変数名 -->
+          <xs:attribute name="toVariable" type="xs:string" use="optional" />
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- PostgreSqlデータ取得処理を実行する -->
+  <xs:element name="PostgreSqlSelect">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="xs:string">
+          <!-- データソース -->
+          <xs:attribute name="dataSource" type="xs:string" use="required" />
+          <!-- ファイル出力パス -->
+          <xs:attribute name="toFile" type="xs:string" use="optional" />
+          <!-- 28.7-001-01 ADD START -->
+          <!-- ヘッダ文字列 -->
+          <xs:attribute name="headerString" type="xs:string" use="optional" />
+          <!-- トレーラ文字列 -->
+          <xs:attribute name="trailerString" type="xs:string" use="optional" />
+          <!-- 28.7-001-01 ADD END -->
+          <!-- 変数名 -->
+          <xs:attribute name="toVariable" type="xs:string" use="optional" />
+          <!-- ローカルテーブル名 -->
+          <xs:attribute name="toTable" type="xs:string" use="optional" />
+          <!-- トランザクション -->
+          <xs:attribute name="transaction" type="transactionType" use="optional" default="none" />
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- PostgreSqlデータ登録理を実行する -->
+  <xs:element name="PostgreSqlInsert">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="xs:string">
+          <!-- データソース -->
+          <xs:attribute name="dataSource" type="xs:string" use="required" />
+          <!-- 変数名 -->
+          <xs:attribute name="toVariable" type="xs:string" use="optional" />
+          <!-- トランザクション -->
+          <xs:attribute name="transaction" type="transactionType" use="optional" default="none" />
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- PostgreSqlデータ更新処理を実行する -->
+  <xs:element name="PostgreSqlUpdate">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="xs:string">
+          <!-- データソース -->
+          <xs:attribute name="dataSource" type="xs:string" use="required" />
+          <!-- 変数名 -->
+          <xs:attribute name="toVariable" type="xs:string" use="optional" />
+          <!-- トランザクション -->
+          <xs:attribute name="transaction" type="transactionType" use="optional" default="none" />
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- PostgreSqlデータ削除処理を実行する -->
+  <xs:element name="PostgreSqlDelete">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="xs:string">
+          <!-- データソース -->
+          <xs:attribute name="dataSource" type="xs:string" use="required" />
+          <!-- 変数名 -->
+          <xs:attribute name="toVariable" type="xs:string" use="optional" />
+          <!-- トランザクション -->
+          <xs:attribute name="transaction" type="transactionType" use="optional" default="none" />
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+  <!-- 23.1-001-01 ADD END -->
+  <!-- PostgreSqlデータ一括登録処理を実行する -->
+  <xs:element name="PostgreSqlBulkInsertFromSqlServer">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="xs:string">
+          <!-- コピー元データソース -->
+          <xs:attribute name="fromDataSource" type="xs:string" use="required" />
+          <!-- コピー先データソース -->
+          <xs:attribute name="toDataSource" type="xs:string" use="required" />
+          <!-- コピー先テーブル名 -->
+          <xs:attribute name="toTable" type="xs:string" use="required" />
+          <!-- 変数名 -->
+          <xs:attribute name="toVariable" type="xs:string" use="optional" />
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+  <!-- PostgreSqlデータ一括登録処理を実行する -->
+  <xs:element name="PostgreSqlBulkInsertFromOracle">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="xs:string">
+          <!-- コピー元データソース -->
+          <xs:attribute name="fromDataSource" type="xs:string" use="required" />
+          <!-- コピー先データソース -->
+          <xs:attribute name="toDataSource" type="xs:string" use="required" />
+          <!-- コピー先テーブル名 -->
+          <xs:attribute name="toTable" type="xs:string" use="required" />
+          <!-- 変数名 -->
+          <xs:attribute name="toVariable" type="xs:string" use="optional" />
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- 条件文処理を実行する -->
+  <xs:element name="If">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <!-- 28.7-001-01 ADD START -->
+        <xs:element ref="SqlSelectScalar" />
+        <!-- 28.7-001-01 ADD END -->
+        <xs:element ref="SqlSelect" />
+        <xs:element ref="SqlInsert" />
+        <xs:element ref="SqlUpdate" />
+        <xs:element ref="SqlDelete" />
+        <xs:element ref="SqlServerBulkInsertFromSqlServer" />
+        <xs:element ref="SqlServerBulkInsertFromOracle" />
+        <!-- 28.7-001-01 ADD START -->
+        <xs:element ref="OracleSelectScalar" />
+        <!-- 28.7-001-01 ADD END -->
+        <xs:element ref="OracleSelect" />
+        <xs:element ref="OracleInsert" />
+        <xs:element ref="OracleUpdate" />
+        <xs:element ref="OracleDelete" />
+        <xs:element ref="OracleBulkInsertFromSqlServer" />
+        <xs:element ref="OracleBulkInsertFromOracle" />
+        <!-- 28.7-001-01 ADD START -->
+        <xs:element ref="LocalDBSelectScalar" />
+        <!-- 28.7-001-01 ADD END -->
+        <xs:element ref="LocalDBSelect" />
+        <xs:element ref="LocalDBInsert" />
+        <xs:element ref="LocalDBUpdate" />
+        <xs:element ref="LocalDBDelete" />
+        <xs:element ref="If" />
+        <xs:element ref="ForEach" />
+        <xs:element ref="TraceLog" />
+        <xs:element ref="AppExit" />
+        <xs:element ref="LoadCSV" />
+        <xs:element ref="ExecuteCommand" />
+        <!-- 21.3-001-01 ADD START -->
+        <xs:element ref="ZipArchive" />
+        <!-- 21.3-001-01 ADD END -->
+        <!-- 23.1-001-01 ADD START -->
+        <xs:element ref="PostgreSqlSelectScalar" />
+        <xs:element ref="PostgreSqlSelect" />
+        <xs:element ref="PostgreSqlInsert" />
+        <xs:element ref="PostgreSqlUpdate" />
+        <xs:element ref="PostgreSqlDelete" />
+        <!-- 23.1-001-01 ADD END -->
+        <xs:element ref="PostgreSqlBulkInsertFromSqlServer" />
+        <xs:element ref="PostgreSqlBulkInsertFromOracle" />
+      </xs:choice>
+      <!-- JScript 表現式 -->
+      <xs:attribute name="test" type="xs:string" use="required" />
+    </xs:complexType>
+  </xs:element>
+
+  <!-- ループ処理を実行する -->
+  <xs:element name="ForEach">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <!-- 28.7-001-01 ADD START -->
+        <xs:element ref="SqlSelectScalar" />
+        <!-- 28.7-001-01 ADD END -->
+        <xs:element ref="SqlSelect" />
+        <xs:element ref="SqlInsert" />
+        <xs:element ref="SqlUpdate" />
+        <xs:element ref="SqlDelete" />
+        <xs:element ref="SqlServerBulkInsertFromSqlServer" />
+        <xs:element ref="SqlServerBulkInsertFromOracle" />
+        <!-- 28.7-001-01 ADD START -->
+        <xs:element ref="OracleSelectScalar" />
+        <!-- 28.7-001-01 ADD END -->
+        <xs:element ref="OracleSelect" />
+        <xs:element ref="OracleInsert" />
+        <xs:element ref="OracleUpdate" />
+        <xs:element ref="OracleDelete" />
+        <xs:element ref="OracleBulkInsertFromSqlServer" />
+        <xs:element ref="OracleBulkInsertFromOracle" />
+        <!-- 28.7-001-01 ADD START -->
+        <xs:element ref="LocalDBSelectScalar" />
+        <!-- 28.7-001-01 ADD END -->
+        <xs:element ref="LocalDBSelect" />
+        <xs:element ref="LocalDBInsert" />
+        <xs:element ref="LocalDBUpdate" />
+        <xs:element ref="LocalDBDelete" />
+        <xs:element ref="If" />
+        <xs:element ref="ForEach" />
+        <xs:element ref="TraceLog" />
+        <xs:element ref="AppExit" />
+        <xs:element ref="LoadCSV" />
+        <xs:element ref="ExecuteCommand" />
+        <!-- 21.3-001-01 ADD START -->
+        <xs:element ref="ZipArchive" />
+        <!-- 21.3-001-01 ADD END -->
+        <!-- 23.1-001-01 ADD START -->
+        <xs:element ref="PostgreSqlSelectScalar" />
+        <xs:element ref="PostgreSqlSelect" />
+        <xs:element ref="PostgreSqlInsert" />
+        <xs:element ref="PostgreSqlUpdate" />
+        <xs:element ref="PostgreSqlDelete" />
+        <!-- 23.1-001-01 ADD END -->
+        <xs:element ref="PostgreSqlBulkInsertFromSqlServer" />
+        <xs:element ref="PostgreSqlBulkInsertFromOracle" />
+      </xs:choice>
+      <!-- 変数名 -->
+      <xs:attribute name="var" type="xs:string" use="required" />
+      <!-- 入力ファイルのパス -->
+      <xs:attribute name="fromFile" type="xs:string" use="optional" />
+      <!-- 共有変数名 -->
+      <xs:attribute name="fromVariable" type="xs:string" use="optional" />
+      <!-- ローカルテーブル名 -->
+      <xs:attribute name="fromTable" type="xs:string" use="optional" />
+      <!-- 正常終了時トランザクション制御(none/commit/rollback) -->
+      <xs:attribute name="transaction" type="transactionType" use="optional" default="commit" />
+      <!-- エラー発生時処理停止 -->
+      <xs:attribute name="stopOnError" type="xs:boolean" use="optional" default="false" />
+      <!-- エラー発生時トランザクション制御 -->
+      <xs:attribute name="transactionOnError" type="transactionType" use="optional" default="rollback" />
+    </xs:complexType>
+  </xs:element>
+
+  <!-- メッセージ出力処理を実行する -->
+  <xs:element name="TraceLog">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="xs:string">
+          <!-- イベント種類:information,error,warning,verbose,off -->
+          <xs:attribute name="eventType" type="eventType" use="optional" default="information" />
+          <!-- 変数名 -->
+          <xs:attribute name="toVariable" type="xs:string" use="optional" />
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- 終了処理を実行する -->
+  <xs:element name="AppExit">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="xs:string">
+          <!-- 返却結果:0(正常終了),1(異常終了),2(警告終了) -->
+          <xs:attribute name="result" type="resultType" use="optional" default="0" />
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- CSVファイルを読み込む -->
+  <xs:element name="LoadCSV">
+    <xs:complexType>
+      <!-- 入力ファイルのパス -->
+      <xs:attribute name="fromFile" type="xs:string" use="required" />
+      <!-- 変数名 -->
+      <xs:attribute name="toVariable" type="xs:string" use="optional" />
+      <!-- ローカルテーブル名 -->
+      <xs:attribute name="toTable" type="xs:string" use="optional" />
+      <!-- ヘッダを含む -->
+      <xs:attribute name="hasHeaders" type="xs:boolean" default="false" />
+    </xs:complexType>
+  </xs:element>
+
+  <!-- 外部Commandを実行する -->
+  <xs:element name="ExecuteCommand">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="xs:string">
+          <!-- 変数名 -->
+          <xs:attribute name="toVariable" type="xs:string" use="optional" />
+          <!-- ログの出力:information,error,warning,verbose,off -->
+          <xs:attribute name="traceLog" type="eventType" use="optional" default="off" />
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- メッセージ種類 -->
+  <xs:simpleType name="eventType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="information" />
+      <xs:enumeration value="error" />
+      <xs:enumeration value="warning" />
+      <xs:enumeration value="verbose" />
+      <xs:enumeration value="off" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- 処理結果 -->
+  <xs:simpleType name="resultType">
+    <xs:restriction base="xs:integer">
+      <!-- 0:正常終了 -->
+      <xs:enumeration value="0" />
+      <!-- 1:異常終了 -->
+      <xs:enumeration value="1" />
+      <!-- 2:警告終了 -->
+      <xs:enumeration value="2" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- トランザクション -->
+  <xs:simpleType name="transactionType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="commit" />
+      <xs:enumeration value="rollback" />
+      <xs:enumeration value="none" />
+    </xs:restriction>
+  </xs:simpleType>
+</xs:schema>

@@ -1,0 +1,216 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{3781579D-BE33-469D-B829-18275C67B664}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>IF.Batch.DTFX</RootNamespace>
+    <AssemblyName>IF.Batch.DTFX</AssemblyName>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <PlatformTarget>x86</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <PlatformTarget>x86</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <OutputPath>bin\Debug\</OutputPath>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <OutputPath>bin\Release\</OutputPath>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="DotNetZip, Version=1.15.0.0, Culture=neutral, PublicKeyToken=6583c7c814667745, processorArchitecture=MSIL">
+      <HintPath>..\packages\DotNetZip.1.15.0\lib\net40\DotNetZip.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=5.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Bcl.AsyncInterfaces.5.0.0\lib\net461\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.JScript" />
+    <Reference Include="Microsoft.VisualBasic" />
+    <Reference Include="Npgsql, Version=4.1.12.0, Culture=neutral, PublicKeyToken=5d8b90d52f46fda7, processorArchitecture=MSIL">
+      <HintPath>..\packages\Npgsql.4.1.12\lib\net461\Npgsql.dll</HintPath>
+    </Reference>
+    <Reference Include="Oracle.ManagedDataAccess, Version=4.122.19.1, Culture=neutral, PublicKeyToken=89b483f429c47342, processorArchitecture=MSIL">
+      <HintPath>..\packages\Oracle.ManagedDataAccess.19.18.0\lib\net40\Oracle.ManagedDataAccess.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
+    </Reference>
+    <Reference Include="System.configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Memory, Version=4.0.1.2, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Memory.4.5.5\lib\net461\System.Memory.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Numerics.Vectors, Version=4.1.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Numerics.Vectors.4.5.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.5.0.0\lib\net45\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Text.Encodings.Web, Version=5.0.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Text.Encodings.Web.5.0.1\lib\net461\System.Text.Encodings.Web.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Text.Json, Version=4.0.1.2, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Text.Json.4.7.2\lib\net461\System.Text.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Threading.Tasks.Extensions, Version=4.2.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Threading.Tasks.Extensions.4.5.4\lib\net461\System.Threading.Tasks.Extensions.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.ValueTuple.4.5.0\lib\net461\System.ValueTuple.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Services" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Elements\AppExitElement.cs" />
+    <Compile Include="Elements\PostgreSqlBulkInsertFromSqlServerElement.cs" />
+    <Compile Include="Elements\PostgreSqlBulkInsertFromOracleElement.cs" />
+    <Compile Include="Elements\PostgreSqlDeleteElement.cs" />
+    <Compile Include="Elements\PostgreSqlInsertElement.cs" />
+    <Compile Include="Elements\PostgreSqlSelectElement.cs" />
+    <Compile Include="Elements\PostgreSqlSelectScalarElement.cs" />
+    <Compile Include="Elements\PostgreSqlUpdateElement.cs" />
+    <Compile Include="Elements\XSqlElementConstants.cs" />
+    <Compile Include="Elements\ForEachElement.cs" />
+    <Compile Include="Elements\IfElement.cs" />
+    <Compile Include="Elements\IXmlElement.cs" />
+    <Compile Include="Elements\LocalDBDeleteElement.cs" />
+    <Compile Include="Elements\LocalDBInsertElement.cs" />
+    <Compile Include="Elements\LocalDBSelectElement.cs" />
+    <Compile Include="Elements\LocalDBUpdateElement.cs" />
+    <Compile Include="Elements\OracleDeleteElement.cs" />
+    <Compile Include="Elements\OracleInsertElement.cs" />
+    <Compile Include="Elements\OracleSelectElement.cs" />
+    <Compile Include="Elements\OracleUpdateElement.cs" />
+    <Compile Include="Elements\SqlDeleteElement.cs" />
+    <Compile Include="Elements\SqlInsertElement.cs" />
+    <Compile Include="Elements\SqlSelectElement.cs" />
+    <Compile Include="Elements\SqlUpdateElement.cs" />
+    <Compile Include="Elements\TraceLogElement.cs" />
+    <Compile Include="Elements\XSqlElementBase.cs" />
+    <Compile Include="Elements\LoadCSVElement.cs" />
+    <Compile Include="Elements\ExecuteCommandElement.cs" />
+    <Compile Include="Elements\SqlServerBulkInsertFromSqlServerElement.cs" />
+    <Compile Include="Elements\SqlServerBulkInsertFromOracleElement.cs" />
+    <Compile Include="Elements\OracleBulkInsertFromSqlServerElement.cs" />
+    <Compile Include="Elements\OracleBulkInsertFromOracleElement.cs" />
+    <Compile Include="Elements\SqlSelectScalarElement.cs" />
+    <Compile Include="Elements\OracleSelectScalarElement.cs" />
+    <Compile Include="Elements\LocalDBSelectScalarElement.cs" />
+    <Compile Include="Elements\ZipArchiveElement.cs" />
+    <Compile Include="Elements\AddFileElement.cs" />
+    <Compile Include="Exceptions\AppExitException.cs" />
+    <Compile Include="Exceptions\AppConfigurationException.cs" />
+    <Compile Include="Executors\AppExitExecutor.cs" />
+    <Compile Include="Executors\ApplicationExecutor.cs" />
+    <Compile Include="Executors\ExecutorBase.cs" />
+    <Compile Include="Executors\ForEachExecutor.cs" />
+    <Compile Include="Executors\IfExecutor.cs" />
+    <Compile Include="Executors\LocalDBDeleteExecutor.cs" />
+    <Compile Include="Executors\LocalDBInsertExecutor.cs" />
+    <Compile Include="Executors\LocalDBSelectExecutor.cs" />
+    <Compile Include="Executors\LocalDBUpdateExecutor.cs" />
+    <Compile Include="Executors\PostgreSqlBulkInsertFromSqlServerExecutor.cs" />
+    <Compile Include="Executors\PostgreSqlBulkInsertFromOracleExecutor.cs" />
+    <Compile Include="Executors\OracleDeleteExecutor.cs" />
+    <Compile Include="Executors\OracleInsertExecutor.cs" />
+    <Compile Include="Executors\OracleSelectExecutor.cs" />
+    <Compile Include="Executors\OracleUpdateExecutor.cs" />
+    <Compile Include="Executors\PostgreSqlDeleteExecutor.cs" />
+    <Compile Include="Executors\SqlDeleteExecutor.cs" />
+    <Compile Include="Executors\PostgreSqlInsertExecutor.cs" />
+    <Compile Include="Executors\SqlInsertExecutor.cs" />
+    <Compile Include="Executors\PostgreSqlSelectExecutor.cs" />
+    <Compile Include="Executors\SqlSelectExecutor.cs" />
+    <Compile Include="Executors\PostgreSqlSelectScalarExecutor.cs" />
+    <Compile Include="Executors\PostgreSqlUpdateExecutor.cs" />
+    <Compile Include="Executors\SqlUpdateExecutor.cs" />
+    <Compile Include="Executors\TraceLogExecutor.cs" />
+    <Compile Include="Executors\LoadCSVExecutor.cs" />
+    <Compile Include="Executors\ExecuteCommandExecutor.cs" />
+    <Compile Include="Executors\SqlServerBulkInsertFromSqlServerExecutor.cs" />
+    <Compile Include="Executors\SqlServerBulkInsertFromOracleExecutor.cs" />
+    <Compile Include="Executors\OracleBulkInsertFromSqlServerExecutor.cs" />
+    <Compile Include="Executors\OracleBulkInsertFromOracleExecutor.cs" />
+    <Compile Include="Executors\SqlSelectScalarExecutor.cs" />
+    <Compile Include="Executors\OracleSelectScalarExecutor.cs" />
+    <Compile Include="Executors\LocalDBSelectScalarExecutor.cs" />
+    <Compile Include="Executors\ZipArchiveExecutor.cs" />
+    <Compile Include="Helper\NpgsqlBulkCopy.cs" />
+    <Compile Include="Helper\ExpressionParser.cs" />
+    <Compile Include="Helper\LocalDBHelper.cs" />
+    <Compile Include="Helper\MathEvaluator.cs" />
+    <Compile Include="Helper\MSSQLTableCreator.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Service\DataTransferContext.cs" />
+    <Compile Include="Service\DataTransferService.cs" />
+    <Compile Include="Service\IUseServiceContext.cs" />
+    <Compile Include="Helper\SharedVariable.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="01_バッチ作成サンプル\SAMPLE_APP.BAT" />
+    <None Include="01_バッチ作成サンプル\SAMPLE_APP.CONFIG" />
+    <None Include="app.config">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="packages.config" />
+    <None Include="XMLSchema\Application.xsd" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Common\IF.Batch.Common.csproj">
+      <Project>{B9F0D658-B89B-4ED6-98EE-3E8DDFEF9B7D}</Project>
+      <Name>IF.Batch.Common</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="01_バッチ作成サンプル\SAMPLE_APP.XML">
+      <SubType>Designer</SubType>
+    </Content>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

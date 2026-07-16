@@ -1,0 +1,193 @@
+﻿/************************************************************************
+* ファイル名:	LoadCSVExecutor.cs
+* 概要: 
+* 履歴:
+*	バージョン		日付		作成者		内容
+*	25.1-001-01		2013/10/07	姜　恵遠	新規作成
+*
+*************************************************************************/
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Data.SqlClient;
+using System.Xml.Linq;
+using System.Diagnostics;
+using System.Reflection;
+using IF.Batch.DTFX.Service;
+using IF.Batch.Common.Configuration;
+using IF.Batch.DTFX.Elements;
+using IF.Batch.Common.Diagnostics;
+using System.IO;
+using IF.Batch.DTFX.Helper;
+using System.Collections;
+using System.Data;
+using IF.Batch.Common.Helper;
+using IF.Batch.DTFX.Exceptions;
+
+namespace IF.Batch.DTFX.Executors
+{
+    /// <summary>
+    /// CSV読み込み処理(LoadCSV)
+    /// CSVファイルを読み込み変数又はローカルテーブルに保存します。
+    /// </summary>
+    public class LoadCSVExecutor : ExecutorBase
+    {
+        public override ResultTypeCode Execute(XElement rawElement)
+        {
+            ResultTypeCode result = ResultTypeCode.Success;
+            var element = CreateElement(rawElement);
+            if (!string.IsNullOrEmpty(element.FromFile))
+            {
+                result = FromFiles(element);
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// XElementからLoadCSVElementを生成します。
+        /// </summary>
+        /// <param name="rawElement">XElement</param>
+        /// <returns>LoadCSVElement</returns>
+        public LoadCSVElement CreateElement(XElement rawElement)
+        {
+            LoadCSVElement obj = new LoadCSVElement();
+            obj.RawElement = rawElement;
+            obj.Id = GetParsedStringValue(rawElement, XSqlElementConstants.AttributeName.id);
+            obj.FromFile = GetParsedStringValue(rawElement, XSqlElementConstants.AttributeName.fromFile);
+            obj.ToVariable = GetParsedStringValue(rawElement, XSqlElementConstants.AttributeName.toVariable);
+            obj.ToTable = GetParsedStringValue(rawElement, XSqlElementConstants.AttributeName.toTable);
+            obj.HasHeaders = GetBooleanValue(rawElement, XSqlElementConstants.AttributeName.hasHeaders, false).Value;
+            return obj;
+        }
+
+        /// <summary>
+        /// CSVファイルを読み込み変数又はローカルテーブルに保存します。
+        /// </summary>
+        /// <param name="element"></param>
+        /// <returns></returns>
+        private ResultTypeCode FromFiles(LoadCSVElement element)
+        {
+            ResultTypeCode result = ResultTypeCode.Success;
+            MethodBase method = MethodInfo.GetCurrentMethod();
+            List<string[]> headers = new List<string[]>();
+            List<string[]> list = new List<string[]>();
+            FileInfo[] files = GetFiles(element.FromFile);
+            if (files.Length == 0)
+            {
+                TraceLog.WriteInfo(method, "対象ファイルが存在しません。{0}", element.FromFile);
+                return ResultTypeCode.Success;
+            }
+            foreach (FileInfo file in files)
+            {
+                try
+                {
+                    result = FromFile(element, file, headers, list);
+                    if (result != ResultTypeCode.Success)
+                    {
+                        return result;
+                    }
+                }
+                catch (FileNotFoundException)
+                {
+                    // 他のAPで処理されたファイルなので処理を成功終了する。
+                    TraceLog.WriteInfo(method, "{0} が見つかりません。", file.FullName);
+                    return ResultTypeCode.Success;
+                }
+            }
+            if (!string.IsNullOrEmpty(element.ToTable))
+            {
+                WriteToTable(headers, list, element);
+            }
+            else if (!string.IsNullOrEmpty(element.ToVariable))
+            {
+                ServiceContext.SharedVariable.SetValue(element.ToVariable, list);
+                TraceLog.WriteDebug(method, "共有変数にデータを保存しました。名前:{0}, 型:{1}, 要素数:{2}", element.ToVariable, list.GetType(), list.Count);
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// CSVファイルを読み込み変数又はローカルテーブルに保存します。
+        /// </summary>
+        /// <param name="element"></param>
+        /// <param name="file"></param>
+        /// <param name="headers"></param>
+        /// <param name="list"></param>
+        /// <returns></returns>
+        private ResultTypeCode FromFile(LoadCSVElement element, FileInfo file, List<string[]> headers, List<string[]> list)
+        {
+            ResultTypeCode result = ResultTypeCode.Success;
+            MethodBase method = MethodInfo.GetCurrentMethod();
+            ApplicationExecutor executor = new ApplicationExecutor();
+            executor.ServiceContext = this.ServiceContext;
+            FileInfo backupedFile = null;
+            if (!string.IsNullOrEmpty(ServiceContext.BackupDirectory))
+            {
+                if (!TryBackupFile(file, out backupedFile))
+                {
+                    return ResultTypeCode.Error;
+                }
+            }
+            else
+            {
+                backupedFile = file;
+            }
+
+            TraceLog.WriteDebug(method, "[{0}]を読み込みます。", backupedFile);
+            bool isGzip = FileHelper.IsGzipFile(backupedFile.FullName);
+            using (CsvReader reader = new CsvReader(backupedFile.FullName, ServiceContext.Encoding, isGzip))
+            {
+                reader.Delimiters = new string[] { ServiceContext.Delimiter };
+                reader.TrimWhiteSpace = ServiceContext.TrimWhiteSpace;
+
+                // 読み飛ばし件数
+                int skipReadRows = 0;
+                for (skipReadRows = 0; skipReadRows < ServiceContext.SkipReadRows && !reader.EndOfData; skipReadRows++)
+                {
+                    reader.ReadFields();
+                }
+                if (skipReadRows > 0)
+                {
+                    TraceLog.WriteInfo(method, "{0}行を読み飛ばしました。", skipReadRows);
+                }
+                if (element.HasHeaders && !reader.EndOfData)
+                {
+                    headers.Add(reader.ReadFields());
+                }
+                // 読み込み件数
+                int readRows = 0;
+                while (!reader.EndOfData && readRows < ServiceContext.MaxReadRows)
+                {
+                    readRows++;
+                    list.Add(reader.ReadFields());
+                }
+                TraceLog.WriteInfo(method, "ファイル名:{0}, 読み込み件数:{1}, 読み飛ばし件数:{2}, ヘッダを含む:{3}", backupedFile.Name, readRows, skipReadRows, element.HasHeaders);
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// CSVファイルのデータをローカルテーブルに出力します。
+        /// </summary>
+        /// <param name="headers">List<string[]></param>
+        /// <param name="list">List<string[]></param>
+        /// <param name="element">LocalDBSelectElement</param>
+        private void WriteToTable(List<string[]> headers, List<string[]> list, LoadCSVElement element)
+        {
+            MethodBase method = MethodInfo.GetCurrentMethod();
+            if (list.Count == 0 && headers.Count == 0)
+            {
+                return;
+            }
+            if (headers.Count > 0)
+            {
+                list.Insert(0, headers.First());
+            }
+            ServiceContext.GetLocalDB().WriteToServer(list, element.ToTable, headers.Count > 0);
+            string physicalTableName = ServiceContext.GetLocalDB().GetLocalDBPhysicalTableName(element.ToTable);
+            ServiceContext.SharedVariable.SetValue(element.ToTable, physicalTableName);
+            TraceLog.WriteDebug(method, "共有変数にデータを保存しました。名前:{0}, 型:{1}", element.ToTable, typeof(string));
+        }
+    }
+}

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Application xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:noNamespaceSchemaLocation="../../DTFX/XMLSchema/Application.xsd">
+  <TraceLog eventType="information">DTFX Quick Start started.</TraceLog>
+  <If test="1 + 1 == 2">
+    <TraceLog eventType="information">Expression evaluation works.</TraceLog>
+  </If>
+  <AppExit result="0">DTFX Quick Start completed.</AppExit>
+</Application>
