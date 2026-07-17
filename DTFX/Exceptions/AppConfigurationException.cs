@@ -1,11 +1,3 @@
-﻿/************************************************************************
-* ファイル名:	AppConfigurationException.cs
-* 概要: 
-* 履歴:
-*	バージョン		日付		作成者		内容
-*	25.1-001-01		2013/08/02	姜　恵遠	新規作成
-*
-*************************************************************************/
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,7 +12,7 @@ namespace IF.Batch.DTFX.Exceptions
     public class AppConfigurationException : Exception
     {
         /// <summary>
-        /// コンストラクタ
+        /// 指定したメッセージで構成例外を生成します。
         /// </summary>
         /// <param name="message">エラーメッセージ</param>
         public AppConfigurationException(string message)
@@ -29,8 +21,9 @@ namespace IF.Batch.DTFX.Exceptions
         }
 
         /// <summary>
-        /// コンストラクタ
+        /// XML 要素名を先頭に付けたメッセージで構成例外を生成します。
         /// </summary>
+        /// <param name="elementName">構成エラーが発生した XML 要素名。</param>
         /// <param name="message">エラーメッセージ</param>
         public AppConfigurationException(string elementName, string message)
             : base(string.Format("{0}:{1}", elementName, message))

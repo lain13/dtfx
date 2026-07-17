@@ -29,7 +29,7 @@ namespace IF.Batch.Common.Helper
         /// 区切り記号入りファイルに出力する場合に、
         /// 常にフィールドを引用符で囲むかどうかを示します。
         /// </summary>
-        /// <returns>常にフィールドを引用符で囲む場合は True。それ以外の場合は False。</returns>
+        /// <value>常にフィールドを引用符で囲む場合は <see langword="true"/>。</value>
         public bool AlwaysFieldsEncloseInQuotes
         {
             get;
@@ -39,7 +39,7 @@ namespace IF.Batch.Common.Helper
         /// <summary>
         /// フィールド値から前後の空白をトリムするかどうかを示します。
         /// </summary>
-        /// <returns>フィールド値から前後の空白をトリムする場合は True。それ以外の場合は False。</returns>
+        /// <value>フィールド値から前後の空白を除去する場合は <see langword="true"/>。</value>
         public bool TrimWhiteSpace
         {
             get;
@@ -58,8 +58,7 @@ namespace IF.Batch.Common.Helper
 
         #region コンストラクタ
         /// <summary>
-        /// 項目セパレータと項目をダブルクォーテーションで囲むかを指定する
-        /// コンストラクタ
+        /// 区切り文字、改行、引用符、空白の処理方法を指定してフォーマッターを生成します。
         /// </summary>
         /// <param name="delimiter">項目セパレータ</param>
         /// <param name="rowDelimiter">改行文字</param>
@@ -126,14 +125,11 @@ namespace IF.Batch.Common.Helper
         {
             string str = field != null ? TrimWhiteSpace ? field.Trim() : field : string.Empty;
 
-            // 「"」で囲む必要があるか調べる
             if (RequiresQuotes(str))
             {
-                // 「"」を「""」とする
                 str = "\"" + str.Replace("\"", "\"\"") + "\"";
             }
 
-            // フィールドを書き込む
             builder.Append(str);
         }
 

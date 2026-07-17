@@ -1,11 +1,3 @@
-/************************************************************************
-* ファイル名:	Program.cs
-* 概要: 汎用データ連携バッチのエントリポイント
-* 履歴:
-*	バージョン		日付		作成者		内容
-*	25.1-001-01		2013/08/02	姜　恵遠	新規作成
-*
-*************************************************************************/
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,7 +20,6 @@ namespace IF.Batch.DTFX
             MethodBase method = MethodInfo.GetCurrentMethod();
 
             InputArguments arguments = new InputArguments(args);
-            // 引数が?又はhelp又はappidがない場合、メッセージを出力して正常終了します。
             if (arguments.Contains("?") || arguments.Contains("help") || !arguments.Contains("appid"))
             {
                 PrintHelpMessage();
@@ -38,7 +29,6 @@ namespace IF.Batch.DTFX
             MergeAppSettings(arguments);
             ITraceLogger logger = new TraceLogger();
 
-            // アプリケーションIDとアプリケーション名を取得する
             string appid = ConfigurationManager.AppSettings["appid"];
             string appname = ConfigurationManager.AppSettings["appname"];
             if (appid != appname)
@@ -51,16 +41,13 @@ namespace IF.Batch.DTFX
             ResultTypeCode result = ResultTypeCode.Success;
             try
             {
-                // データ連携サービス生成
                 using (DataTransferService service = new DataTransferService(logger))
                 {
-                    // 環境設定の検証
                     if (!service.EnsureServiceConfigurations())
                     {
                         logger.WriteError(method, "環境設定が正しくありません。");
                         result = ResultTypeCode.Error;
                     }
-                    // 初期化の検証
                     else if (!service.InitService())
                     {
                         logger.WriteError(method, "初期化に失敗しました。");
@@ -68,7 +55,6 @@ namespace IF.Batch.DTFX
                     }
                     else
                     {
-                        // 実行
                         service.ExecuteService();
                         result = service.ServiceResult;
                     }
@@ -141,7 +127,7 @@ namespace IF.Batch.DTFX
             }
             catch
             {
-                // 何もしない
+                // 起動時の既存動作を維持し、構成エラーの報告はサービス初期化へ委ねます。
             }
         }
     }

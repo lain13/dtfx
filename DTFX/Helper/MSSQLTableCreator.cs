@@ -1,12 +1,3 @@
-﻿/************************************************************************
-* ファイル名:	MSSQLTableCreator.cs
-* 概要: 
-* 履歴:
-*	バージョン		日付		作成者		内容
-*	25.1-001-01		2013/08/02	姜　恵遠	新規作成
-*   25.1-001-02     2013/10/07  姜　恵遠    25年度2期
-*
-*************************************************************************/
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,17 +9,20 @@ using System.Data.Common;
 
 namespace IF.Batch.DTFX.Helper
 {
+    /// <summary>
+    /// データリーダーまたは CSV 列名から SQL Server 一時テーブルの DDL を生成します。
+    /// </summary>
     public class MSSQLTableCreator
     {
         /// <summary>
         /// SQLサーバーのデータ型を取得します。
         /// </summary>
-        /// <param name="dbTypeName"></param>
-        /// <param name="type"></param>
-        /// <param name="columnSize"></param>
-        /// <param name="numericPrecision"></param>
-        /// <param name="numericScale"></param>
-        /// <returns></returns>
+        /// <param name="dbTypeName">プロバイダーが返すデータ型名。</param>
+        /// <param name="type">列の CLR 型。</param>
+        /// <param name="columnSize">文字列列の最大長。負数の場合は <c>MAX</c>。</param>
+        /// <param name="numericPrecision">数値列の精度。</param>
+        /// <param name="numericScale">数値列の小数点以下桁数。</param>
+        /// <returns>一時テーブルの列定義に使用する SQL Server データ型。</returns>
         public static string SQLGetType(string dbTypeName, object type, int columnSize, int numericPrecision, int numericScale)
         {
             switch (dbTypeName)
@@ -76,9 +70,9 @@ namespace IF.Batch.DTFX.Helper
         /// <summary>
         /// Create DDL文を生成します。
         /// </summary>
-        /// <param name="reader"></param>
-        /// <param name="tableName"></param>
-        /// <returns></returns>
+        /// <param name="reader">列名と型情報を提供するデータリーダー。</param>
+        /// <param name="tableName">作成するテーブル名。</param>
+        /// <returns>データリーダーのスキーマに対応する <c>CREATE TABLE</c> 文。</returns>
         public static string GetCreateTableStatement(DbDataReader reader, string tableName)
         {
 
@@ -106,9 +100,9 @@ namespace IF.Batch.DTFX.Helper
         /// <summary>
         /// Create DDL文を生成します。
         /// </summary>
-        /// <param name="columnNames"></param>
-        /// <param name="tableName"></param>
-        /// <returns></returns>
+        /// <param name="columnNames">作成する列名。型はすべて <c>NVARCHAR(MAX)</c> になります。</param>
+        /// <param name="tableName">作成するテーブル名。</param>
+        /// <returns>指定した列名に対応する <c>CREATE TABLE</c> 文。</returns>
         public static string GetCreateTableStatement(string[] columnNames, string tableName)
         {
             StringBuilder builder = new StringBuilder();
@@ -134,9 +128,9 @@ namespace IF.Batch.DTFX.Helper
         /// <summary>
         /// カラム名を生成します。
         /// </summary>
-        /// <param name="columnName"></param>
-        /// <param name="columnCount"></param>
-        /// <returns></returns>
+        /// <param name="columnName">列名のプレフィックス。</param>
+        /// <param name="columnCount">生成する列数。</param>
+        /// <returns><paramref name="columnName"/> に 1 から始まる番号を付けた列名の配列。</returns>
         public static string[] CreateColumnNames(string columnName, int columnCount)
         {
             string[] columns = new string[columnCount];

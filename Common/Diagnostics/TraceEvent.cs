@@ -56,7 +56,6 @@ namespace IF.Batch.Common.Diagnostics
         /// </summary>
         static TraceEvent()
         {
-            // 初期動作として、構成ファイルのプロバイダからトレースソースを設定する
             ITraceEventConfiguration provider = new AppConfigConfigurationProvider();
             TraceEvent.DefaultEventSource = provider.EventSource;
         }

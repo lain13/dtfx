@@ -1,11 +1,3 @@
-/************************************************************************
-* ファイル名:	SqlSelectExecutor.cs
-* 概要: 
-* 履歴:
-*	バージョン		日付		作成者		内容
-*	25.1-001-01		2013/08/02	姜　恵遠	新規作成
-*
-*************************************************************************/
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -87,10 +79,8 @@ namespace IF.Batch.DTFX.Executors
             obj.DataSource = GetParsedStringValue(rawElement, XSqlElementConstants.AttributeName.dataSource);
             obj.Transaction = GetParsedStringValue(rawElement, XSqlElementConstants.AttributeName.transaction);
             obj.ToFile = GetParsedStringValue(rawElement, XSqlElementConstants.AttributeName.toFile);
-            // 28.7-001-01 ADD START
             obj.HeaderString = GetParsedStringValue(rawElement, XSqlElementConstants.AttributeName.headerString);
             obj.TrailerString = GetParsedStringValue(rawElement, XSqlElementConstants.AttributeName.trailerString);
-            // 28.7-001-01 ADD END
             obj.ToTable = GetParsedStringValue(rawElement, XSqlElementConstants.AttributeName.toTable);
             obj.ToVariable = GetParsedStringValue(rawElement, XSqlElementConstants.AttributeName.toVariable);
             obj.Value = GetParsedStringValue(rawElement);
@@ -124,14 +114,11 @@ namespace IF.Batch.DTFX.Executors
             long writedLine = 0;
             Stopwatch sw = new Stopwatch();
             sw.Start();
-            // 21.3-001-01 MOD START
             string[] headerStrings = null;
-            // ヘッダ文字列を指定した場合
             if (!string.IsNullOrEmpty(element.HeaderString))
             {
                 headerStrings = new string[] { element.HeaderString };
             }
-            // ヘッダを出力フラグを設定した場合
             else if (ServiceContext.WriteHeaders)
             {
                 headerStrings = GetFieldNames(reader);
@@ -148,8 +135,6 @@ namespace IF.Batch.DTFX.Executors
                 try
                 {
                     writer.Formatter = Formatter;
-            // 21.3-001-01 MOD END
-
                     while (reader.Read())
                     {
                         string[] rows = new string[reader.FieldCount];
@@ -179,19 +164,15 @@ namespace IF.Batch.DTFX.Executors
                         writer.WriteLine(rows);
                         writedLine++;
                     }
-
-                    // 28.7-001-01 ADD START
-                    // トレーラ文字列を指定した場合
                     if (!string.IsNullOrEmpty(element.TrailerString))
                     {
                         writer.WriteLine(new string[] { element.TrailerString });
                     }
-                    // 28.7-001-01 ADD END
                     writedFiles = writer.WritedFiles;
                 }
                 catch
                 {
-                    // データ取得中エラーが発生した場合、出力したファイルを削除する。
+                    // 読み取りに失敗した不完全な CSV は Dispose 時に削除します。
                     writer.RollbackFile = true;
                     throw;
                 }

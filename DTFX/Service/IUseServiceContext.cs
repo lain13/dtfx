@@ -1,11 +1,3 @@
-/************************************************************************
-* ファイル名:	IUseServiceContext.cs
-* 概要: 
-* 履歴:
-*	バージョン		日付		作成者		内容
-*	25.1-001-01		2013/08/02	姜　恵遠	新規作成
-*
-*************************************************************************/
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,11 +7,14 @@ using IF.Batch.Common.Configuration;
 namespace IF.Batch.DTFX.Service
 {
     /// <summary>
-    /// サービスコンテキストを利用するクラスに共通のインターフェース
+    /// 実行時のサービスコンテキストを受け取るコンポーネントを定義します。
     /// </summary>
     /// <typeparam name="TContext">サービスコンテキストの型</typeparam>
     public interface IUseServiceContext<TContext>
     {
+        /// <summary>
+        /// コンポーネントが使用するサービスコンテキストを取得または設定します。
+        /// </summary>
         TContext ServiceContext { get; set; }
     }
 }

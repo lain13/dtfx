@@ -1,11 +1,3 @@
-﻿/************************************************************************
-* ファイル名:	OracleSelectScalarExecutor.cs
-* 概要: 
-* 履歴:
-*	バージョン		日付		作成者		内容
-*   28.7-001-01     2017/03/08  姜　恵遠    新規作成
-*
-*************************************************************************/
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -63,7 +55,7 @@ namespace IF.Batch.DTFX.Executors
         /// XElementからOracleSelectElementを生成します。
         /// </summary>
         /// <param name="rawElement">XElement</param>
-        /// <returns>SqlSelectScalarElement</returns>
+        /// <returns>解析した <see cref="OracleSelectScalarElement"/>。</returns>
         public OracleSelectScalarElement CreateElement(XElement rawElement)
         {
             OracleSelectScalarElement obj = new OracleSelectScalarElement();

@@ -24,6 +24,7 @@
 - `If` の式評価エンジンを旧式の Microsoft.JScript から JexlNet へ変更し、JEXL 文法のドキュメントとサンプルを更新
 - Git リポジトリに不要な Subversion / AnkhSVN メタデータを削除
 - Common のレガシー変更履歴コメントと空の XML ドキュメントを整理し、公開 API の説明を補完
+- DTFX のファイル別変更履歴、変更番号マーカー、コメントアウトされた旧コードを削除し、トランザクションとファイル競合の意図を文書化
 - Executor の生成責務を `IExecutorFactory` に分離し、ネストした制御フローとサービスから差し替え可能に変更
 - AppSettings、接続文字列、ジョブ XML の読み込みを `DataTransferContextFactory` に分離し、`DataTransferService` を実行ライフサイクルの調整に限定
 - `ITraceLogger` と既存 `TraceLog` 用アダプターを追加し、サービスとコンテキスト構成処理のログ出力を差し替え可能に変更

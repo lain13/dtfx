@@ -1,14 +1,3 @@
-/************************************************************************
-* ファイル名:	LocalDBHelper.cs
-* 概要: SQL Server一時テーブルの生成・管理・データ読み書きを行うヘルパークラス
-* 履歴:
-*	バージョン		日付		作成者		内容
-*	25.1-001-01		2013/08/02	姜　恵遠	新規作成
-*	25.1-001-02		2013/09/24	姜　恵遠	SqlCommandTimeout追加
-*	25.1-001-03		2013/10/10	姜　恵遠	一時テーブル名の頭に#を追加
-*                                           一時テーブル物理削除処理機能削除
-*
-*************************************************************************/
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -62,11 +51,22 @@ namespace IF.Batch.DTFX.Helper
         /// </summary>
         private readonly SynchronizedCollection<string> _logicalTableNames = new SynchronizedCollection<string>();
 
+        /// <summary>
+        /// 標準ロガーを使用して LocalDB ヘルパーを生成します。
+        /// </summary>
+        /// <param name="connection">tempdb へ接続済みの SQL Server 接続。</param>
+        /// <param name="timeout">SQL コマンドと Bulk Copy のタイムアウト秒数。</param>
         public LocalDBHelper(SqlConnection connection, int timeout)
             : this(connection, timeout, new TraceLogger())
         {
         }
 
+        /// <summary>
+        /// 指定した接続、タイムアウト、ロガーで LocalDB ヘルパーを生成します。
+        /// </summary>
+        /// <param name="connection">tempdb へ接続済みの SQL Server 接続。</param>
+        /// <param name="timeout">SQL コマンドと Bulk Copy のタイムアウト秒数。</param>
+        /// <param name="logger">DDL などを記録するロガー。</param>
         public LocalDBHelper(SqlConnection connection, int timeout, ITraceLogger logger)
         {
             if (logger == null)
@@ -92,7 +92,7 @@ namespace IF.Batch.DTFX.Helper
         /// <summary>
         /// 一時DBテーブルを生成する。
         /// </summary>
-        /// <param name="reader">データ元</param>
+        /// <param name="reader">列名と型情報を提供するデータリーダー。</param>
         /// <param name="tableName">テーブル名</param>
         public void CreateLocalDBTable(DbDataReader reader, string tableName)
         {
@@ -114,7 +114,7 @@ namespace IF.Batch.DTFX.Helper
         /// <summary>
         /// 一時DBテーブルを生成する。
         /// </summary>
-        /// <param name="reader">データ元</param>
+        /// <param name="columns">一時テーブルの列名。</param>
         /// <param name="tableName">テーブル名</param>
         public void CreateLocalDBTable(string[] columns, string tableName)
         {
@@ -137,7 +137,7 @@ namespace IF.Batch.DTFX.Helper
         /// 一時DBにテーブルが生成されたか確認します。
         /// </summary>
         /// <param name="tableName">テーブル名</param>
-        /// <returns></returns>
+        /// <returns>このヘルパーが論理テーブル名を登録済みの場合は <see langword="true"/>。</returns>
         public bool IsLocalDBTableCreated(string tableName)
         {
             return _logicalTableNames.Contains(tableName);
@@ -200,7 +200,7 @@ namespace IF.Batch.DTFX.Helper
         /// ローカルテーブルのSchemaを取得する
         /// </summary>
         /// <param name="tableName">テーブル名</param>
-        /// <returns></returns>
+        /// <returns>列定義だけを持つ空のデータテーブル。</returns>
         public DataTable GetEmptyDataTable(string tableName)
         {
             string sql = "SELECT TOP 0 * FROM " + GetLocalDBPhysicalTableName(tableName);
@@ -220,7 +220,7 @@ namespace IF.Batch.DTFX.Helper
         /// 一時DBテーブルの全データを取得する。
         /// </summary>
         /// <param name="tableName">テーブル名</param>
-        /// <returns></returns>
+        /// <returns>一時テーブルの全行。テーブルが未作成の場合は <see langword="null"/>。</returns>
         public DataTable SelectAllTable(string tableName)
         {
             if (!IsLocalDBTableCreated(tableName))

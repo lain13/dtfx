@@ -17,11 +17,18 @@ namespace IF.Batch.DTFX.Executors
         private readonly IDictionary<XName, Func<ExecutorBase>> _registrations;
         private readonly ITraceLogger _logger;
 
+        /// <summary>
+        /// 標準ロガーと標準の要素登録を使用するファクトリを生成します。
+        /// </summary>
         public ExecutorFactory()
             : this(new TraceLogger())
         {
         }
 
+        /// <summary>
+        /// 指定したロガーと標準の要素登録を使用するファクトリを生成します。
+        /// </summary>
+        /// <param name="logger">生成したすべての Executor で共有するロガー。</param>
         public ExecutorFactory(ITraceLogger logger)
         {
             if (logger == null)
@@ -68,6 +75,11 @@ namespace IF.Batch.DTFX.Executors
             };
         }
 
+        /// <summary>
+        /// Application の子要素を順次実行するルート Executor を生成します。
+        /// </summary>
+        /// <param name="serviceContext">ジョブ全体で共有するコンテキスト。</param>
+        /// <returns>共有コンテキストとロガーを設定済みのルート Executor。</returns>
         public ITaskExecutor<XElement> CreateApplicationExecutor(DataTransferContext serviceContext)
         {
             EnsureServiceContext(serviceContext);
@@ -76,6 +88,12 @@ namespace IF.Batch.DTFX.Executors
             return executor;
         }
 
+        /// <summary>
+        /// 要素名に対応する Executor を生成し、共有コンテキストとロガーを設定します。
+        /// </summary>
+        /// <param name="element">実行する XML 要素。</param>
+        /// <param name="serviceContext">ジョブ全体で共有するコンテキスト。</param>
+        /// <returns>要素に対応する Executor。</returns>
         public ExecutorBase CreateExecutor(XElement element, DataTransferContext serviceContext)
         {
             if (element == null)

@@ -1,11 +1,3 @@
-﻿/************************************************************************
-* ファイル名:	LoadCSVExecutor.cs
-* 概要: 
-* 履歴:
-*	バージョン		日付		作成者		内容
-*	25.1-001-01		2013/10/07	姜　恵遠	新規作成
-*
-*************************************************************************/
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -64,8 +56,8 @@ namespace IF.Batch.DTFX.Executors
         /// <summary>
         /// CSVファイルを読み込み変数又はローカルテーブルに保存します。
         /// </summary>
-        /// <param name="element"></param>
-        /// <returns></returns>
+        /// <param name="element">入力パターンと出力先を含む設定。</param>
+        /// <returns>すべての一致ファイルを読み込めた場合は <c>Success</c>。</returns>
         private ResultTypeCode FromFiles(LoadCSVElement element)
         {
             ResultTypeCode result = ResultTypeCode.Success;
@@ -90,7 +82,7 @@ namespace IF.Batch.DTFX.Executors
                 }
                 catch (FileNotFoundException)
                 {
-                    // 他のAPで処理されたファイルなので処理を成功終了する。
+                    // 列挙後に別プロセスが取得したファイルは競合ではなく処理済みとして扱います。
                     Logger.WriteInfo(method, "{0} が見つかりません。", file.FullName);
                     return ResultTypeCode.Success;
                 }
@@ -110,11 +102,11 @@ namespace IF.Batch.DTFX.Executors
         /// <summary>
         /// CSVファイルを読み込み変数又はローカルテーブルに保存します。
         /// </summary>
-        /// <param name="element"></param>
-        /// <param name="file"></param>
-        /// <param name="headers"></param>
-        /// <param name="list"></param>
-        /// <returns></returns>
+        /// <param name="element">CSV 読み込み設定。</param>
+        /// <param name="file">処理する CSV または GZIP ファイル。</param>
+        /// <param name="headers">ファイルから読み取ったヘッダーの格納先。</param>
+        /// <param name="list">データ行の格納先。</param>
+        /// <returns>ファイルを読み込めた場合は <c>Success</c>。</returns>
         private ResultTypeCode FromFile(LoadCSVElement element, FileInfo file, List<string[]> headers, List<string[]> list)
         {
             ResultTypeCode result = ResultTypeCode.Success;
@@ -139,7 +131,6 @@ namespace IF.Batch.DTFX.Executors
                 reader.Delimiters = new string[] { ServiceContext.Delimiter };
                 reader.TrimWhiteSpace = ServiceContext.TrimWhiteSpace;
 
-                // 読み飛ばし件数
                 int skipReadRows = 0;
                 for (skipReadRows = 0; skipReadRows < ServiceContext.SkipReadRows && !reader.EndOfData; skipReadRows++)
                 {
@@ -153,7 +144,6 @@ namespace IF.Batch.DTFX.Executors
                 {
                     headers.Add(reader.ReadFields());
                 }
-                // 読み込み件数
                 int readRows = 0;
                 while (!reader.EndOfData && readRows < ServiceContext.MaxReadRows)
                 {
@@ -168,9 +158,9 @@ namespace IF.Batch.DTFX.Executors
         /// <summary>
         /// CSVファイルのデータをローカルテーブルに出力します。
         /// </summary>
-        /// <param name="headers">List<string[]></param>
-        /// <param name="list">List<string[]></param>
-        /// <param name="element">LocalDBSelectElement</param>
+        /// <param name="headers">CSV から読み取ったヘッダー行。</param>
+        /// <param name="list">LocalDB へ書き込むデータ行。</param>
+        /// <param name="element">書き込み先の論理テーブル名を含む設定。</param>
         private void WriteToTable(List<string[]> headers, List<string[]> list, LoadCSVElement element)
         {
             MethodBase method = MethodInfo.GetCurrentMethod();

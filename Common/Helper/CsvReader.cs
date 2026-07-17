@@ -89,7 +89,7 @@ namespace IF.Batch.Common.Helper
         /// 現在のカーソル位置とファイルの終端との間に、
         /// 空行またはコメント行以外のデータが存在しない場合、True を返します。
         /// </summary>
-        /// <returns>読み取るデータが他にない場合は True。それ以外の場合は False。</returns>
+        /// <value>読み取るデータが残っていない場合は <see langword="true"/>。</value>
         public bool EndOfData
         {
             get
@@ -139,7 +139,7 @@ namespace IF.Batch.Common.Helper
         /// 区切り記号入りファイルを解析する場合に、
         /// フィールドが引用符で囲まれているかどうかを示します。
         /// </summary>
-        /// <returns>フィールドが引用符で囲まれている場合は True。それ以外の場合は False。</returns>
+        /// <value>現在のフィールドが引用符で囲まれている場合は <see langword="true"/>。</value>
         public bool HasFieldsEnclosedInQuotes
         {
             get
@@ -167,7 +167,7 @@ namespace IF.Batch.Common.Helper
         /// <summary>
         /// フィールド値から前後の空白をトリムするかどうかを示します。
         /// </summary>
-        /// <returns>フィールド値から前後の空白をトリムする場合は True。それ以外の場合は False。</returns>
+        /// <value>フィールド値から前後の空白を除去する場合は <see langword="true"/>。</value>
         public bool TrimWhiteSpace
         {
             get

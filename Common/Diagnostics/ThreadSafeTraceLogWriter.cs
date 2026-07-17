@@ -13,8 +13,7 @@ using IF.Batch.Common.Helper;
 namespace IF.Batch.Common.Diagnostics
 {
     /// <summary>
-    /// 日付ことサイズごとに自動ファイル解決を行う
-    /// スレッドセーフなトレースライタクラス
+    /// 日付またはサイズに応じてファイルを切り替えるスレッドセーフなトレースライターです。
     /// </summary>
     public class ThreadSafeTraceLogWriter : IDisposable, ITraceLogWriter
     {
@@ -76,7 +75,7 @@ namespace IF.Batch.Common.Diagnostics
 
         #region コンストラクタ
         /// <summary>
-        /// コンストラクタ
+        /// 既定のログ設定でライターを生成します。通常は書き込み前に <see cref="Initialize"/> を呼び出します。
         /// </summary>
         public ThreadSafeTraceLogWriter() { }
         #endregion
@@ -138,16 +137,13 @@ namespace IF.Batch.Common.Diagnostics
         /// <param name="append">既存のファイルに追加する場合は <see langword="true"/>。</param>
         private void PopulateStream(bool append)
         {
-            // ファイルパスを求める
             string filepath = FileHelper.ResolvePathFromTemplate(_tracePathTemplate, DateTime.Now);
             filepath = append ? FileHelper.LastFileName(filepath) : FileHelper.NextFileName(filepath);
 
-            // ストリームの構築
             Stream baseStream = OpenNewFileStream(filepath);
             Stream newstream = _useGzip ? new GZipStream(baseStream, CompressionMode.Compress) : baseStream;
             StreamWriter sw = new StreamWriter(newstream, _encoding, _bufferSize);
             sw.AutoFlush = _autoFlush;
-            // スレッドセーフなラッパー作成
             _stream = TextWriter.Synchronized(sw);
             _baseStream = baseStream;
         }
@@ -220,7 +216,6 @@ namespace IF.Batch.Common.Diagnostics
             _traceLock.EnterReadLock();
             try
             {
-                // 書式指定してメッセージをフォーマット
                 string message = FormatTraceLog(level, dt, trace);
                 _stream.WriteLine(message);
             }
@@ -264,7 +259,7 @@ namespace IF.Batch.Common.Diagnostics
                     _traceLock.EnterWriteLock();
                     try
                     {
-                        // ロック取得後再確認
+                        // 待機中に別スレッドが切り替えた可能性があるため、書き込みロック内で再確認します。
                         if (_stream == null)
                         {
                             _lastTraceDate = dt;
@@ -283,7 +278,7 @@ namespace IF.Batch.Common.Diagnostics
                     _traceLock.EnterWriteLock();
                     try
                     {
-                        // ロック取得後再確認
+                        // 待機中に別スレッドが切り替えた可能性があるため、書き込みロック内で再確認します。
                         if (_lastTraceDate.ToString("yyyy/MM/dd") != dt.ToString("yyyy/MM/dd"))
                         {
                             _lastTraceDate = dt;
@@ -302,7 +297,7 @@ namespace IF.Batch.Common.Diagnostics
                     _traceLock.EnterWriteLock();
                     try
                     {
-                        //　ロック取得後再確認
+                        // 待機中に別スレッドが切り替えた可能性があるため、書き込みロック内で再確認します。
                         if (_baseStream.Length > _traceMaxSize)
                         {
                             Close();
@@ -326,8 +321,7 @@ namespace IF.Batch.Common.Diagnostics
 
         #region 例外メッセージ出力用ヘルパーメソッド
         /// <summary>
-        /// 可能な限りすべてのプロパティデータの出力と、
-        /// InnerExceptionのトレースデータを取得するメソッド
+        /// 例外の公開プロパティを出力し、最後に内部例外を再帰的に追加します。
         /// </summary>
         /// <param name="ex">トレースデータを取得する例外インスタンス</param>
         /// <returns>トレース用文字列</returns>
@@ -337,11 +331,9 @@ namespace IF.Batch.Common.Diagnostics
             StringBuilder builder = new StringBuilder();
             builder.Append(string.Format(template, "ExceptionType", ex.GetType().ToString()));
             builder.Append(string.Format(template, "ToString()", ex.ToString()));
-            // 全てのパブリックプロパティを取得
             PropertyInfo[] properties = ex.GetType().GetProperties();
             foreach (PropertyInfo p in properties)
             {
-                // InnerExceptionは最後
                 if (p.Name == "InnerException") continue;
 
                 if (p.GetGetMethod() != null)

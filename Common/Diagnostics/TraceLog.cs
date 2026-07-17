@@ -36,7 +36,7 @@ namespace IF.Batch.Common.Diagnostics
                 {
                     lock (_syncObj)
                     {
-                        // ダブルロック
+                        // 待機中に別スレッドが初期化した可能性があるため、ロック内で再確認します。
                         if (_instance == null)
                         {
                             _instance = new TraceLog();
@@ -66,7 +66,7 @@ namespace IF.Batch.Common.Diagnostics
 
         #region コンストラクタ
         /// <summary>
-        /// コンストラクタ
+        /// ログライターを最初の書き込み時に遅延初期化するファサードを生成します。
         /// </summary>
         public TraceLog()
         {
@@ -110,7 +110,6 @@ namespace IF.Batch.Common.Diagnostics
             {
                 if (_logWriter != null) return;
 
-                // デフォルトのログライターセットアップ
                 AppConfigConfigurationProvider provider = new AppConfigConfigurationProvider();
                 if (string.IsNullOrWhiteSpace(provider.TracePathTemplate))
                 {
@@ -309,8 +308,7 @@ namespace IF.Batch.Common.Diagnostics
         }
         #region 例外メッセージ出力用ヘルパーメソッド
         /// <summary>
-        /// 可能な限りすべてのプロパティデータの出力と、
-        /// InnerExceptionのトレースデータを取得するメソッド
+        /// 例外の公開プロパティを出力し、最後に内部例外を再帰的に追加します。
         /// </summary>
         /// <param name="ex">トレースデータを取得する例外インスタンス</param>
         /// <returns>トレース用文字列</returns>
@@ -320,11 +318,9 @@ namespace IF.Batch.Common.Diagnostics
             StringBuilder builder = new StringBuilder();
             builder.Append(string.Format(template, "ExceptionType", ex.GetType().ToString()));
             builder.Append(string.Format(template, "ToString()", ex.ToString()));
-            // 全てのパブリックプロパティを取得
             PropertyInfo[] properties = ex.GetType().GetProperties();
             foreach (PropertyInfo p in properties)
             {
-                // InnerExceptionは最後
                 if (p.Name == "InnerException") continue;
 
                 if (p.GetGetMethod() != null)

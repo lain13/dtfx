@@ -1,13 +1,3 @@
-/************************************************************************
-* ファイル名:	ExecutorBase.cs
-* 概要: 全Executorの基底クラス。XML解析・CSV出力・ファイル操作の共通機能を提供する
-* 履歴:
-*	バージョン		日付		作成者		内容
-*	25.1-001-01		2013/08/02	姜　恵遠	新規作成
-*   25.1-001-02     2013/10/07  姜　恵遠    25年度2期
-*   21.3-001-01     2021/07/05  姜　恵遠    Biz-A Step1.5対応
-*
-*************************************************************************/
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,7 +17,7 @@ using IF.Batch.DTFX.Elements;
 namespace IF.Batch.DTFX.Executors
 {
     /// <summary>
-    /// ベースクラス
+    /// XML 属性の解析、結果コードの集約、CSV 出力、入力ファイル操作を Executor 間で共有します。
     /// </summary>
     public abstract class ExecutorBase : ITaskExecutor<XElement>,
         IUseServiceContext<DataTransferContext>
@@ -62,7 +52,7 @@ namespace IF.Batch.DTFX.Executors
 
         private ExpressionParser _parser;
         /// <summary>
-        /// 表現式を解析
+        /// 共有変数を含む文字列を解析します。
         /// </summary>
         protected ExpressionParser Parser
         {
@@ -97,9 +87,9 @@ namespace IF.Batch.DTFX.Executors
         /// <summary>
         /// 解析された文字列を返却します。
         /// </summary>
-        /// <param name="element"></param>
-        /// <param name="attributeName"></param>
-        /// <returns></returns>
+        /// <param name="element">読み取る XML 要素。</param>
+        /// <param name="attributeName">属性名。省略した場合は要素の本文を読み取ります。</param>
+        /// <returns>共有変数を展開した値。値が空の場合は <see langword="null"/>。</returns>
         protected string GetParsedStringValue(XElement element, string attributeName = null)
         {
             string value = null;
@@ -122,10 +112,10 @@ namespace IF.Batch.DTFX.Executors
         /// <summary>
         /// 元の文字列を返却します。
         /// </summary>
-        /// <param name="element"></param>
-        /// <param name="attributeName"></param>
-        /// <param name="defaultValue"></param>
-        /// <returns></returns>
+        /// <param name="element">読み取る XML 要素。</param>
+        /// <param name="attributeName">属性名。</param>
+        /// <param name="defaultValue">属性がないか空の場合に返す値。</param>
+        /// <returns>共有変数を展開していない属性値、または既定値。</returns>
         protected string GetRawStringValue(XElement element, string attributeName, string defaultValue = null)
         {
             XAttribute attribute = element.Attribute(attributeName);
@@ -139,10 +129,10 @@ namespace IF.Batch.DTFX.Executors
         /// <summary>
         /// NULL可能なbool値を返却します。
         /// </summary>
-        /// <param name="element"></param>
-        /// <param name="attributeName"></param>
-        /// <param name="defaultValue"></param>
-        /// <returns></returns>
+        /// <param name="element">読み取る XML 要素。</param>
+        /// <param name="attributeName">属性名。</param>
+        /// <param name="defaultValue">属性がないか真偽値へ変換できない場合に返す値。</param>
+        /// <returns><c>true</c>、<c>false</c>、<c>1</c>、<c>0</c> を変換した値、または既定値。</returns>
         protected bool? GetBooleanValue(XElement element, string attributeName, bool? defaultValue = null)
         {
             string value = GetRawStringValue(element, attributeName);
@@ -173,10 +163,10 @@ namespace IF.Batch.DTFX.Executors
         /// <summary>
         /// NULL可能なint値を返却します。
         /// </summary>
-        /// <param name="element"></param>
-        /// <param name="attributeName"></param>
-        /// <param name="defaultValue"></param>
-        /// <returns></returns>
+        /// <param name="element">読み取る XML 要素。</param>
+        /// <param name="attributeName">属性名。</param>
+        /// <param name="defaultValue">属性がないか整数へ変換できない場合に返す値。</param>
+        /// <returns>変換した整数、または既定値。</returns>
         protected int? GetIntValue(XElement element, string attributeName, int? defaultValue = null)
         {
             string value = GetRawStringValue(element, attributeName);
@@ -199,8 +189,8 @@ namespace IF.Batch.DTFX.Executors
         /// <summary>
         /// 異常・警告・正常順で返却します。
         /// </summary>
-        /// <param name="codes"></param>
-        /// <returns></returns>
+        /// <param name="codes">集約する結果コード。</param>
+        /// <returns><c>Error</c>、<c>Warning</c>、<c>Success</c> の優先順位で最も重大な結果。</returns>
         protected ResultTypeCode MergeResultTypeCode(params ResultTypeCode[] codes)
         {
             if (codes.Contains(ResultTypeCode.Error))
@@ -267,9 +257,9 @@ namespace IF.Batch.DTFX.Executors
         /// <summary>
         /// ファイルをバックアップします。
         /// </summary>
-        /// <param name="file"></param>
-        /// <param name="backupedFile"></param>
-        /// <returns></returns>
+        /// <param name="file">移動する入力ファイル。</param>
+        /// <param name="backupedFile">移動後のファイル。失敗時は <see langword="null"/>。</param>
+        /// <returns>バックアップディレクトリへの移動に成功した場合は <see langword="true"/>。</returns>
         protected bool TryBackupFile(FileInfo file, out FileInfo backupedFile)
         {
             MethodBase method = MethodInfo.GetCurrentMethod();
@@ -286,7 +276,6 @@ namespace IF.Batch.DTFX.Executors
                 {
                     break;
                 }
-                // 2秒待機
                 Logger.WriteDebug(method, "ファイル移動失敗 {0} {1} {2}", i, file.FullName, ServiceContext.BackupDirectory);
                 System.Threading.Thread.Sleep(2000);
             }
@@ -308,10 +297,8 @@ namespace IF.Batch.DTFX.Executors
         /// </summary>
         /// <param name="searchPattern">検索パターン</param>
         /// <returns>ファイルリスト</returns>
-        // 21.3-001-01 MOD START
         protected virtual FileInfo[] GetFiles(string searchPattern)
         {
-        // 21.3-001-01 MOD END
             MethodBase method = MethodInfo.GetCurrentMethod();
             if (File.Exists(searchPattern))
             {
@@ -398,7 +385,6 @@ namespace IF.Batch.DTFX.Executors
             }
             else if (XSqlElementConstants.AttributeValue.off.Equals(eventType, StringComparison.OrdinalIgnoreCase))
             {
-                // 何もしない
             }
         }
     }

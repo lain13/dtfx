@@ -18,20 +18,38 @@ namespace IF.Batch.DTFX.Service
         private readonly ITraceLogger _logger;
         private bool _disposed;
 
+        /// <summary>
+        /// 現在のジョブ実行コンテキストを取得します。構成前は <see langword="null"/> です。
+        /// </summary>
         public DataTransferContext ServiceContext { get; private set; }
 
+        /// <summary>
+        /// 最後に実行したジョブの集約結果を取得します。
+        /// </summary>
         public ResultTypeCode ServiceResult { get; private set; }
 
+        /// <summary>
+        /// 標準の構成ファクトリ、Executor ファクトリ、ロガーを使用します。
+        /// </summary>
         public DataTransferService()
             : this(new TraceLogger())
         {
         }
 
+        /// <summary>
+        /// 指定したロガーをすべての標準コンポーネントで共有します。
+        /// </summary>
+        /// <param name="logger">ジョブ全体で共有するロガー。</param>
         public DataTransferService(ITraceLogger logger)
             : this(new DataTransferContextFactory(logger), new ExecutorFactory(logger), logger)
         {
         }
 
+        /// <summary>
+        /// 指定したファクトリと標準ロガーを使用します。
+        /// </summary>
+        /// <param name="contextFactory">ジョブ実行コンテキストを生成するファクトリ。</param>
+        /// <param name="executorFactory">XML 要素に対応する Executor を生成するファクトリ。</param>
         public DataTransferService(
             IDataTransferContextFactory contextFactory,
             IExecutorFactory executorFactory)
@@ -39,6 +57,12 @@ namespace IF.Batch.DTFX.Service
         {
         }
 
+        /// <summary>
+        /// 構成、Executor、ログの依存関係を明示してサービスを生成します。
+        /// </summary>
+        /// <param name="contextFactory">ジョブ実行コンテキストを生成するファクトリ。</param>
+        /// <param name="executorFactory">XML 要素に対応する Executor を生成するファクトリ。</param>
+        /// <param name="logger">ジョブ全体で共有するロガー。</param>
         public DataTransferService(
             IDataTransferContextFactory contextFactory,
             IExecutorFactory executorFactory,
@@ -62,6 +86,10 @@ namespace IF.Batch.DTFX.Service
             _logger = logger;
         }
 
+        /// <summary>
+        /// ジョブ設定と XML 定義を読み込み、実行コンテキストを構成します。
+        /// </summary>
+        /// <returns>実行可能なコンテキストを生成できた場合は <see langword="true"/>。</returns>
         public virtual bool EnsureServiceConfigurations()
         {
             ThrowIfDisposed();
@@ -78,12 +106,19 @@ namespace IF.Batch.DTFX.Service
             return configured;
         }
 
+        /// <summary>
+        /// 構成済みコンテキストが存在することを確認します。
+        /// </summary>
+        /// <returns>初期化済みのコンテキストがある場合は <see langword="true"/>。</returns>
         public virtual bool InitService()
         {
             ThrowIfDisposed();
             return ServiceContext != null;
         }
 
+        /// <summary>
+        /// 構成済みの Application XML を実行し、結果コードを保存します。
+        /// </summary>
         public void ExecuteService()
         {
             ThrowIfDisposed();
@@ -115,6 +150,9 @@ namespace IF.Batch.DTFX.Service
             }
         }
 
+        /// <summary>
+        /// エラー結果ではロールバックし、成功または警告結果ではコミットしてから接続を破棄します。
+        /// </summary>
         public void Dispose()
         {
             if (_disposed)

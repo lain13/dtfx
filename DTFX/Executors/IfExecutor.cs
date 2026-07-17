@@ -1,12 +1,3 @@
-/************************************************************************
-* ファイル名:	IfExecutor.cs
-* 概要: 条件式を評価してTrueの場合に下位要素を実行する条件分岐処理
-* 履歴:
-*	バージョン		日付		作成者		内容
-*	25.1-001-01		2013/08/02	姜　恵遠	新規作成
-*   25.1-001-02     2013/10/07  姜　恵遠    25年度2期
-*
-*************************************************************************/
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,7 +22,6 @@ namespace IF.Batch.DTFX.Executors
     {
         private readonly IExecutorFactory _executorFactory;
 
-        // JEXL式を解析する
         private readonly ExpressionEvaluator _evaluator = new ExpressionEvaluator();
 
         public IfExecutor()
@@ -62,7 +52,7 @@ namespace IF.Batch.DTFX.Executors
             {
                 return ResultTypeCode.Error;
             }
-            // &amp;を&に置換する(XMLで&が表現できない場合のため
+            // 既存ジョブが二重エスケープした論理演算子も受け付けます。
             expr = expr.Replace("&amp;", "&");
             string result = _evaluator.Evaluate(expr);
             Logger.WriteDebug(method, "結果:{0}, 計算式:{1}", result, expr);

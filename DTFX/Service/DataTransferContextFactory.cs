@@ -18,11 +18,18 @@ namespace IF.Batch.DTFX.Service
     {
         private readonly ITraceLogger _logger;
 
+        /// <summary>
+        /// 標準ロガーを使用するファクトリを生成します。
+        /// </summary>
         public DataTransferContextFactory()
             : this(new TraceLogger())
         {
         }
 
+        /// <summary>
+        /// 指定したロガーを使用するファクトリを生成します。
+        /// </summary>
+        /// <param name="logger">構成読み込みエラーを記録するロガー。</param>
         public DataTransferContextFactory(ITraceLogger logger)
         {
             if (logger == null)
@@ -33,6 +40,11 @@ namespace IF.Batch.DTFX.Service
             _logger = logger;
         }
 
+        /// <summary>
+        /// 実行ファイル設定、ジョブ設定、XML 定義を読み込み、実行コンテキストを生成します。
+        /// </summary>
+        /// <param name="context">生成したコンテキスト。構成エラー時も診断可能な部分コンテキストを返すことがあります。</param>
+        /// <returns>ジョブを実行できる状態まで構成できた場合は <see langword="true"/>。</returns>
         public bool TryCreate(out DataTransferContext context)
         {
             MethodBase method = MethodInfo.GetCurrentMethod();

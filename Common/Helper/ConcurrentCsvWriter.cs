@@ -118,7 +118,7 @@ namespace IF.Batch.Common.Helper
         /// 区切り記号入りファイルに出力する場合に、
         /// 常にフィールドを引用符で囲むかどうかを示します。
         /// </summary>
-        /// <returns>常にフィールドを引用符で囲む場合は True。それ以外の場合は False。</returns>
+        /// <value>常にフィールドを引用符で囲む場合は <see langword="true"/>。</value>
         public bool AlwaysFieldsEncloseInQuotes
         {
             get
@@ -134,7 +134,7 @@ namespace IF.Batch.Common.Helper
         /// <summary>
         /// フィールド値から前後の空白をトリムするかどうかを示します。
         /// </summary>
-        /// <returns>フィールド値から前後の空白をトリムする場合は True。それ以外の場合は False。</returns>
+        /// <value>フィールド値から前後の空白を除去する場合は <see langword="true"/>。</value>
         public bool TrimWhiteSpace
         {
             get
@@ -251,7 +251,6 @@ namespace IF.Batch.Common.Helper
                 {
                     _formatter = _writer.Formatter;
                 }
-                // ヘッダを出力
                 if (this.HasHeaderStrings)
                 {
                     _writer.WriteLine(this._headerStrings);
@@ -272,7 +271,6 @@ namespace IF.Batch.Common.Helper
                 {
                     _formatter = _writer.Formatter;
                 }
-                // ヘッダを出力
                 if (this.HasHeaderStrings)
                 {
                     _writer.WriteLine(this._headerStrings);
@@ -367,7 +365,6 @@ namespace IF.Batch.Common.Helper
         {
             lock (_syncObject)
             {
-                // 常にファイルを作成する場合
                 if (!this._rollbackFile && this._alwaysCreateFile)
                 {
                     WriteCheck();

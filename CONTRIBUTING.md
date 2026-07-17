@@ -22,3 +22,11 @@ Issue と Pull Request を歓迎します。変更はできるだけ小さく、
 - SQL Server、Oracle、PostgreSQL のプロバイダーを更新する場合は、対象データベースでの統合テスト結果を記載してください。
 
 Pull Request には、変更理由、検証に使ったコマンド、影響を受けるデータベースまたは XML 要素を記載してください。
+
+## コメントとドキュメント
+
+- ソースコメントは、コードから読み取れない理由、互換性制約、並行処理、データ消失を防ぐための動作を説明してください。処理をそのまま日本語にしたコメントは追加しません。
+- 公開型と公開メンバーには、呼び出し側が必要とする契約を XML ドキュメントコメントで記述します。既定値、副作用、所有権、例外時の扱いを優先し、空の `param` や `returns` は残しません。
+- ファイル名、作成者、日付、変更番号を並べた履歴ヘッダーや `ADD/MOD START/END` は追加しません。変更履歴は Git と [`CHANGELOG.md`](CHANGELOG.md) で管理し、削除したコードはコメントアウトせず Git から参照します。
+- XML 要素と属性の利用方法は [`docs/xml-elements.md`](docs/xml-elements.md)、設定キーは [`docs/configuration.md`](docs/configuration.md)、実行ライフサイクルと設計判断は [`docs/architecture.md`](docs/architecture.md)、共通ライブラリの公開 API は [`docs/common-library.md`](docs/common-library.md) を更新してください。
+- コメントだけを変更した場合も Release ビルドとスモークテストを実行し、XML ドキュメントのタグとリンクが壊れていないことを確認してください。

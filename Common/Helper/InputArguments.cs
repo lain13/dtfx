@@ -30,7 +30,7 @@ namespace IF.Batch.Common.Helper
         /// プレフィックスの有無を問わず、指定されたキーの値を取得または設定します。
         /// </summary>
         /// <param name="key">検索または設定するキー。</param>
-        /// <returns>キーに対応する値。キーが存在しない場合は <see langword="null"/>。</returns>
+        /// <value>キーに対応する値。キーが存在しない場合は <see langword="null"/>。</value>
         public string this[string key]
         {
             get { return GetValue(key); }

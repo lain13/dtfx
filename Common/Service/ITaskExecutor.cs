@@ -7,7 +7,7 @@ using IF.Batch.Common.Configuration;
 namespace IF.Batch.Common.Service
 {
     /// <summary>
-    /// タスク実行インターフェース
+    /// 入力パラメーターを処理し、DTFX の結果コードを返すタスクを定義します。
     /// </summary>
     /// <typeparam name="TParameter">タスクへ渡す参照型のパラメーター。</typeparam>
     public interface ITaskExecutor<TParameter>

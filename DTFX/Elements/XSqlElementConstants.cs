@@ -1,12 +1,3 @@
-/************************************************************************
-* ファイル名:	XSqlElementConstants.cs
-* 概要: 
-* 履歴:
-*	バージョン		日付		作成者		内容
-*	25.1-001-01		2013/08/02	姜　恵遠	新規作成
-*   24.1-001-01     2024/03/27  姜　恵遠    PostgreSQL Bulk Insert対応
-*
-*************************************************************************/
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,23 +15,17 @@ namespace IF.Batch.DTFX.Elements
         /// </summary>
         public static class ElementName
         {
-            // 28.7-001-01 ADD START
             public const string SqlSelectScalar = "SqlSelectScalar";
-            // 28.7-001-01 ADD END
             public const string SqlSelect = "SqlSelect";
             public const string SqlInsert = "SqlInsert";
             public const string SqlUpdate = "SqlUpdate";
             public const string SqlDelete = "SqlDelete";
-            // 28.7-001-01 ADD START
             public const string OracleSelectScalar = "OracleSelectScalar";
-            // 28.7-001-01 ADD END
             public const string OracleSelect = "OracleSelect";
             public const string OracleInsert = "OracleInsert";
             public const string OracleUpdate = "OracleUpdate";
             public const string OracleDelete = "OracleDelete";
-            // 28.7-001-01 ADD START
             public const string LocalDBSelectScalar = "LocalDBSelectScalar";
-            // 28.7-001-01 ADD END
             public const string LocalDBSelect = "LocalDBSelect";
             public const string LocalDBInsert = "LocalDBInsert";
             public const string LocalDBUpdate = "LocalDBUpdate";
@@ -64,10 +49,8 @@ namespace IF.Batch.DTFX.Elements
             public const string OracleBulkInsertFromSqlServer = "OracleBulkInsertFromSqlServer";
             public const string PostgreSqlBulkInsertFromOracle = "PostgreSqlBulkInsertFromOracle";
             public const string PostgreSqlBulkInsertFromSqlServer = "PostgreSqlBulkInsertFromSqlServer";
-            // 21.3-001-01 ADD START
             public const string ZipArchive = "ZipArchive";
             public const string AddFile = "AddFile";
-            // 21.3-001-01 ADD END
         }
 
         /// <summary>
@@ -78,10 +61,8 @@ namespace IF.Batch.DTFX.Elements
             public const string id = "id";
             public const string toTable = "toTable";
             public const string toFile = "toFile";
-            // 28.7-001-01 ADD START
             public const string headerString = "headerString";
             public const string trailerString = "trailerString";
-            // 28.7-001-01 ADD END
             public const string toDataSource = "toDataSource";
             public const string fromFile = "fromFile";
             public const string fromVariable = "fromVariable";
@@ -98,13 +79,11 @@ namespace IF.Batch.DTFX.Elements
             public const string transaction = "transaction";
             public const string transactionOnError = "transactionOnError";
             public const string hasHeaders = "hasHeaders";
-            // 21.3-001-01 ADD START
             public const string filename = "filename";
             public const string password = "password";
             public const string overwrite = "overwrite";
             public const string filenamePattern = "filenamePattern";
             public const string deletedOnArchived = "deletedOnArchived";
-            // 21.3-001-01 ADD END
         }
 
         /// <summary>

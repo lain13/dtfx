@@ -1,12 +1,3 @@
-/************************************************************************
-* ファイル名:	ExpressionParser.cs
-* 概要: 
-* 履歴:
-*	バージョン		日付		作成者		内容
-*	25.1-001-01		2013/08/02	姜　恵遠	新規作成
-*   25.1-001-02     2013/10/07  姜　恵遠    25年度2期
-*
-*************************************************************************/
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,13 +11,8 @@ using IF.Batch.DTFX.Service;
 namespace IF.Batch.DTFX.Helper
 {
     /// <summary>
-    /// 文字列から表現式を抽出して置換するクラス
-    /// 解析できなかった場合は値をそのまま返却します。
-    /// 以下に表現式の例を表します。
-    /// ${変数名}
-    /// ${辞書名['キー']}
-    /// ${配列[0]}
-    /// ${変数名.プロパティ名1}
+    /// 文字列内の <c>${name}</c> 形式を共有変数の値で置換します。
+    /// 配列インデックス、辞書キー、公開プロパティを連結して参照でき、解決できない式は元のまま残します。
     /// </summary>
     public class ExpressionParser
     {
@@ -35,13 +21,10 @@ namespace IF.Batch.DTFX.Helper
         /// </summary>
         public const string REGEX_EX = @"\${([^}]+)}";
 
-        /// <summary>
-        /// 共有変数
-        /// </summary>
         private SharedVariable _sharedValues;
 
         /// <summary>
-        /// コンストラクタ
+        /// 置換元となる共有変数を指定してパーサーを生成します。
         /// </summary>
         /// <param name="SharedValues">共有変数</param>
         public ExpressionParser(SharedVariable SharedValues)
@@ -86,12 +69,10 @@ namespace IF.Batch.DTFX.Helper
             int dotIndex = parseTarget.IndexOf('.');
             int indexorIndex = parseTarget.IndexOf('[');
 
-            // 対象文字列に「.」または「[」がない場合、文字列をそのまま返す
             if (dotIndex == -1 && indexorIndex == -1)
             {
                 return origString;
             }
-            // 対象文字列に「.」がない場合
             else if (dotIndex == -1)
             {
                 string subKey1 = parseTarget.Substring(0, indexorIndex);
@@ -106,7 +87,6 @@ namespace IF.Batch.DTFX.Helper
                     }
                 }
             }
-            // 対象文字列に「[」がない場合
             else if (indexorIndex == -1)
             {
                 string subKey1 = parseTarget.Substring(0, dotIndex);
@@ -121,10 +101,8 @@ namespace IF.Batch.DTFX.Helper
                     }
                 }
             }
-            // 対象文字列に両方存在する場合
             else
             {
-                // 「[」を先に解析する。
                 if (indexorIndex < dotIndex)
                 {
                     string subKey1 = parseTarget.Substring(0, indexorIndex);
@@ -143,7 +121,6 @@ namespace IF.Batch.DTFX.Helper
                         return replaceTarget;
                     }
                 }
-                // 「.」を先に解析する。
                 else
                 {
                     int lastIndex1 = parseTarget.LastIndexOf(']');
@@ -179,9 +156,9 @@ namespace IF.Batch.DTFX.Helper
         /// <summary>
         /// 対象文字列に「.」が含まれている場合、プロパティまたは辞書キーで値を取得します。
         /// </summary>
-        /// <param name="obj"></param>
-        /// <param name="key"></param>
-        /// <returns></returns>
+        /// <param name="obj">プロパティまたは辞書キーを読み取るオブジェクト。</param>
+        /// <param name="key">先頭のピリオドを含む参照パス。</param>
+        /// <returns>解決した値。参照できない場合は <see langword="null"/>。</returns>
         private string ParseStringFromDot(object obj, string key)
         {
             string subkey1 = null;
@@ -247,9 +224,9 @@ namespace IF.Batch.DTFX.Helper
         /// <summary>
         /// 対象文字列に「[」が含まれている場合、インデクサーまたは辞書キーで値を取得します。
         /// </summary>
-        /// <param name="obj"></param>
-        /// <param name="key"></param>
-        /// <returns></returns>
+        /// <param name="obj">配列、インデクサー、辞書のいずれか。</param>
+        /// <param name="key">角括弧を含む参照パス。</param>
+        /// <returns>解決した値。参照できない場合は <see langword="null"/>。</returns>
         private string ParseStringFromIndexor(object obj, string key)
         {
             int subIndex1 = key.IndexOf('[');

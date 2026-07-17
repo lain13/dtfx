@@ -74,6 +74,12 @@ flowchart LR
 
 データベース接続は必要になった時点で作成され、失敗時は最大 3 回、2 秒間隔で試行します。通常のデータソースでは接続時にトランザクションも開始します。`ForEach` は `transaction`、`transactionOnError`、`stopOnError` 属性でループ後のトランザクション制御を変更できます。
 
+### トランザクションのライフサイクル
+
+SQL Server、Oracle、PostgreSQL の接続では、接続を開いた直後からトランザクションを保持します。要素または `ForEach` がコミット・ロールバックを要求すると、現在のトランザクションを確定した直後に同じ接続で次のトランザクションを開始します。このため、後続要素は接続を作り直さずに処理を継続できます。`__TEMPDB__` の LocalDB 接続だけはこの管理対象外です。
+
+ジョブ終了時は `DataTransferService.Dispose` が最終結果を確認し、`Error` なら未確定トランザクションをロールバックし、`Success` または `Warning` ならコミットしてから接続を破棄します。`DataTransferContext` をサービス外で直接利用する場合は、エラー経路で `DisposeTransactions(false)` を呼んでから破棄してください。コンテキスト単体の `Dispose` は互換性のため未確定トランザクションをコミットします。
+
 ## XML スキーマ
 
 `DTFX/XMLSchema/Application.xsd` が、サポートする要素と属性を定義します。現在のランタイムは XML の読み込みと `<Application>` ルートの確認のみを行い、実行時に XSD 検証を強制しません。代わりに、スモークテストと CI が XSD 自体のコンパイルと同梱サンプルのスキーマ整合性を検証します。

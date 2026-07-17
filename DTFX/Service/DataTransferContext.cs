@@ -1,15 +1,3 @@
-/************************************************************************
-* ファイル名:	DataTransferContext.cs
-* 概要: アプリケーション共有コンテキスト。DB接続・トランザクション・共有変数を一元管理する
-* 履歴:
-*	バージョン		日付		作成者		内容
-*	25.1-001-01		2013/08/02	姜　恵遠	新規作成
-*   25.1-001-02     2013/10/07  姜　恵遠    レコード間の区切り文字(改行文字)追加
-*	25.1-001-03		2013/10/10	姜　恵遠	一時テーブル物理削除処理削除
-*	27.2-001-01		2015/06/23	朴　眞秀	Mantis:0072130対応
-*   21.3-001-01     2021/07/05  姜　恵遠    Biz-A Step1.5対応
-*
-*************************************************************************/
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,6 +19,9 @@ using Npgsql;
 
 namespace IF.Batch.DTFX.Service
 {
+    /// <summary>
+    /// 1 回のジョブ実行で共有する設定、変数、データベース接続、トランザクションを管理します。
+    /// </summary>
     public class DataTransferContext : IServiceContext, IDisposable
     {
         /// <summary>
@@ -138,14 +129,10 @@ namespace IF.Batch.DTFX.Service
         /// SQLコマンドのタイムアウト
         /// </summary>
         public int SqlCommandTimeout { get; set; }
-
-        // 21.3-001-01 ADD START
         /// <summary>
         /// BOMなし(UTF-8文字コードのみ)
         /// </summary>
         public bool WithoutBom { get; set; }
-        // 21.3-001-01 ADD END
-
         /// <summary>
         /// ルートXML要素
         /// </summary>
@@ -167,11 +154,18 @@ namespace IF.Batch.DTFX.Service
         /// </summary>
         private const string __TEMPDB__ = "__TEMPDB__";
 
+        /// <summary>
+        /// 標準ロガーを使用するコンテキストを生成します。
+        /// </summary>
         public DataTransferContext()
             : this(new TraceLogger())
         {
         }
 
+        /// <summary>
+        /// 指定したロガーを使用するコンテキストを生成します。
+        /// </summary>
+        /// <param name="logger">接続とトランザクションの状態を記録するロガー。</param>
         public DataTransferContext(ITraceLogger logger)
         {
             if (logger == null)
@@ -182,6 +176,10 @@ namespace IF.Batch.DTFX.Service
             _logger = logger;
         }
 
+        /// <summary>
+        /// データソース名に対応する接続設定を登録または置換します。
+        /// </summary>
+        /// <param name="settings">登録する接続文字列設定。</param>
         public void AddConnectionStringSettings(ConnectionStringSettings settings)
         {
             _connectionStrings.AddOrUpdate(settings.Name, settings, (key, current) => settings);
@@ -190,7 +188,7 @@ namespace IF.Batch.DTFX.Service
         /// <summary>
         /// 一時DBを取得する
         /// </summary>
-        /// <returns></returns>
+        /// <returns>同じジョブ実行中に共有される LocalDB ヘルパー。</returns>
         public LocalDBHelper GetLocalDB()
         {
             if (_localDB == null)
@@ -208,7 +206,7 @@ namespace IF.Batch.DTFX.Service
         /// </summary>
         /// <typeparam name="T">DbConnection型</typeparam>
         /// <param name="dataSourceName">DataSource名</param>
-        /// <returns>DB接続</returns>
+        /// <returns>指定した型の開いているデータベース接続。</returns>
         public T GetConnection<T>(string dataSourceName)
         {
             if (string.IsNullOrWhiteSpace(dataSourceName))
@@ -235,7 +233,7 @@ namespace IF.Batch.DTFX.Service
         /// </summary>
         /// <typeparam name="T">DbTransaction型</typeparam>
         /// <param name="dataSourceName">DataSource名</param>
-        /// <returns>DB接続</returns>
+        /// <returns>開始済みのトランザクション。登録されていない場合は <see langword="null"/>。</returns>
         public T GetTransaction<T>(string dataSourceName)
         {
             object obj = null;
@@ -247,7 +245,7 @@ namespace IF.Batch.DTFX.Service
         }
 
         /// <summary>
-        /// Transactionをコミットする
+        /// 指定したトランザクションをコミットし、同じ接続で次のトランザクションを開始します。
         /// </summary>
         /// <param name="dataSourceName">DataSource名</param>
         public void CommitTransaction(string dataSourceName)
@@ -270,7 +268,7 @@ namespace IF.Batch.DTFX.Service
         }
 
         /// <summary>
-        /// Transactionをロールバックする
+        /// 指定したトランザクションをロールバックし、同じ接続で次のトランザクションを開始します。
         /// </summary>
         /// <param name="dataSourceName">DataSource名</param>
         public void RollbackTransaction(string dataSourceName)
@@ -305,7 +303,7 @@ namespace IF.Batch.DTFX.Service
             {
                 case "System.Data.SqlClient":
                     SqlConnection sqlConn = CreateSqlServerConnection(settings);
-                    // 一時DBの場合はTransactionを利用しない
+                    // tempdb の作業テーブルは接続全体で共有するため、LocalDB 接続にはトランザクションを作成しません。
                     if (__TEMPDB__ == settings.Name)
                     {
                         _transactions.TryAdd(settings.Name, null);
@@ -344,15 +342,12 @@ namespace IF.Batch.DTFX.Service
                     sqlConn = new SqlConnection();
                     sqlConn.ConnectionString = settings.ConnectionString;
                     sqlConn.Open();
-                    // 27.2-001-01 ADD START
                     break;
-                    // 27.2-001-01 ADD END
                 }
                 catch
                 {
                     if (i < 2)
                     {
-                        // 2秒待機
                         _logger.WriteWarning(method, "データベース接続に失敗しました。データソース名:{0}, プロバイダ名:{1}, 接続回数:{2}", settings.Name, settings.ProviderName, i);
                         System.Threading.Thread.Sleep(2000);
                         continue;
@@ -382,15 +377,12 @@ namespace IF.Batch.DTFX.Service
                     oraConn = new OracleConnection();
                     oraConn.ConnectionString = settings.ConnectionString;
                     oraConn.Open();
-                    // 27.2-001-01 ADD START
                     break;
-                    // 27.2-001-01 ADD END
                 }
                 catch
                 {
                     if (i < 2)
                     {
-                        // 2秒待機
                         _logger.WriteWarning(method, "データベース接続に失敗しました。データソース名:{0}, プロバイダ名:{1}, 接続回数:{2}", settings.Name, settings.ProviderName, i);
                         System.Threading.Thread.Sleep(2000);
                         continue;
@@ -426,7 +418,6 @@ namespace IF.Batch.DTFX.Service
                 {
                     if (i < 2)
                     {
-                        // 2秒待機
                         _logger.WriteWarning(method, "データベース接続に失敗しました。データソース名:{0}, プロバイダ名:{1}, 接続回数:{2}", settings.Name, settings.ProviderName, i);
                         System.Threading.Thread.Sleep(2000);
                         continue;
@@ -441,7 +432,7 @@ namespace IF.Batch.DTFX.Service
         }
 
         /// <summary>
-        /// CommitAllTransactions
+        /// 登録されているすべてのトランザクションをコミットし、各接続で次のトランザクションを開始します。
         /// </summary>
         public void CommitAllTransactions()
         {
@@ -455,7 +446,7 @@ namespace IF.Batch.DTFX.Service
         }
 
         /// <summary>
-        /// RollbackAllTransactions
+        /// 登録されているすべてのトランザクションをロールバックし、各接続で次のトランザクションを開始します。
         /// </summary>
         public void RollbackAllTransactions()
         {
@@ -469,7 +460,7 @@ namespace IF.Batch.DTFX.Service
         }
 
         /// <summary>
-        /// DisposeTransactions
+        /// 登録されているトランザクションを確定して破棄します。新しいトランザクションは開始しません。
         /// </summary>
         /// <param name="commit">コミット可否</param>
         public void DisposeTransactions(bool commit = true)
@@ -496,7 +487,7 @@ namespace IF.Batch.DTFX.Service
         }
 
         /// <summary>
-        /// DisposeConnections
+        /// 開いているすべてのデータベース接続を破棄します。
         /// </summary>
         public void DisposeConnections()
         {
@@ -515,7 +506,7 @@ namespace IF.Batch.DTFX.Service
         }
 
         /// <summary>
-        /// Dispose
+        /// 未確定のトランザクションをコミットしてから接続を破棄します。
         /// </summary>
         public void Dispose()
         {

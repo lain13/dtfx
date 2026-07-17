@@ -1,12 +1,3 @@
-/************************************************************************
-* ファイル名:	ForEachExecutor.cs
-* 概要: CSVファイル、テーブル、変数からレコードを繰り返し実行するループ処理
-* 履歴:
-*	バージョン		日付		作成者		内容
-*	25.1-001-01		2013/08/02	姜　恵遠	新規作成
-*   28.7-001-01     2017/03/08  姜　恵遠    法人CRM-WG対応 STEP2
-*
-*************************************************************************/
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -83,7 +74,6 @@ namespace IF.Batch.DTFX.Executors
             }
             catch
             {
-                // 実行中例外は発生した場合
                 ControlTransactions(ResultTypeCode.Error, element);
                 throw;
             }
@@ -114,8 +104,8 @@ namespace IF.Batch.DTFX.Executors
         /// <summary>
         /// ローカルテーブルからForEachを実行します。
         /// </summary>
-        /// <param name="element"></param>
-        /// <returns></returns>
+        /// <param name="element">テーブル名、反復変数名、子要素を含む設定。</param>
+        /// <returns>すべての行の集約結果。</returns>
         private ResultTypeCode FromTable(ForEachElement element)
         {
             ResultTypeCode result = ResultTypeCode.Success;
@@ -171,7 +161,6 @@ namespace IF.Batch.DTFX.Executors
             {
                 ServiceContext.SharedVariable.RemoveValue(element.Var);
             }
-            // トランザクション制御
             ControlTransactions(result, element);
             return result;
         }
@@ -179,8 +168,8 @@ namespace IF.Batch.DTFX.Executors
         /// <summary>
         /// 共有変数からForEachを実行します。
         /// </summary>
-        /// <param name="element"></param>
-        /// <returns></returns>
+        /// <param name="element">共有変数名、反復変数名、子要素を含む設定。</param>
+        /// <returns>すべての項目の集約結果。</returns>
         private ResultTypeCode FromVariable(ForEachElement element)
         {
             ResultTypeCode result = ResultTypeCode.Success;
@@ -231,7 +220,6 @@ namespace IF.Batch.DTFX.Executors
             {
                 ServiceContext.SharedVariable.RemoveValue(element.Var);
             }
-            // トランザクション制御
             ControlTransactions(result, element);
             return result;
         }
@@ -239,13 +227,11 @@ namespace IF.Batch.DTFX.Executors
         /// <summary>
         /// ファイルからForEachを実行します。
         /// </summary>
-        /// <param name="element"></param>
-        /// <returns></returns>
+        /// <param name="element">ファイル検索条件、反復変数名、子要素を含む設定。</param>
+        /// <returns>一致したすべてのファイルの集約結果。</returns>
         private ResultTypeCode FromFiles(ForEachElement element)
         {
-            // 28.7-001-01 ADD START
             ResultTypeCode allResult = ResultTypeCode.Success;
-            // 28.7-001-01 ADD END
             ResultTypeCode result = ResultTypeCode.Success;
             MethodBase method = MethodInfo.GetCurrentMethod();
             FileInfo[] files = GetFiles(element.FromFile);
@@ -262,15 +248,10 @@ namespace IF.Batch.DTFX.Executors
                 }
                 catch (FileNotFoundException)
                 {
-                    // 他のAPで処理されたファイルなので処理を成功終了する。
+                    // 列挙後に別プロセスが取得したファイルは競合ではなく処理済みとして扱います。
                     Logger.WriteInfo(method, "{0} が見つかりません。", file.FullName);
-                    // 28.7-001-01 MOD START
-                    // return ResultTypeCode.Success;
                     return allResult;
-                    // 28.7-001-01 MOD END
                 }
-
-                // 28.7-001-01 ADD START
                 if (allResult == ResultTypeCode.Success && (result == ResultTypeCode.Warning || result == ResultTypeCode.Error))
                 {
                     allResult = result;
@@ -279,9 +260,6 @@ namespace IF.Batch.DTFX.Executors
                 {
                     allResult = result;
                 }
-                // 28.7-001-01 ADD END
-
-                // トランザクション制御
                 ControlTransactions(result, element);
 
                 if (result == ResultTypeCode.Error && element.StopOnError)
@@ -289,18 +267,15 @@ namespace IF.Batch.DTFX.Executors
                     return result;
                 }
             }
-            // 28.7-001-01 MOD START
-            // return result;
             return allResult;
-            // 28.7-001-01 MOD END
         }
 
         /// <summary>
         /// ファイルからForEachを実行します。
         /// </summary>
-        /// <param name="element"></param>
-        /// <param name="file"></param>
-        /// <returns></returns>
+        /// <param name="element">CSV 読み込みと子要素の実行設定。</param>
+        /// <param name="file">処理する CSV または GZIP ファイル。</param>
+        /// <returns>ファイル内のすべての行の集約結果。</returns>
         private ResultTypeCode FromFile(ForEachElement element, FileInfo file)
         {
             ResultTypeCode result = ResultTypeCode.Success;
@@ -334,7 +309,6 @@ namespace IF.Batch.DTFX.Executors
                         errorWriter = new ConcurrentCsvWriter(Path.Combine(ServiceContext.ErrorDirectory, backupedFile.Name + ".error"), ServiceContext.Encoding, false);
                         errorWriter.Formatter = Formatter;
                     }
-                    // 読み飛ばし件数
                     int skipReadRows = 0;
                     for (skipReadRows = 0; skipReadRows < ServiceContext.SkipReadRows && !reader.EndOfData; skipReadRows++)
                     {
@@ -344,7 +318,6 @@ namespace IF.Batch.DTFX.Executors
                     {
                         Logger.WriteInfo(method, "{0}行を読み飛ばしました。", skipReadRows);
                     }
-                    // 読み込み件数
                     int readRows = 0;
                     while (!reader.EndOfData && readRows < ServiceContext.MaxReadRows)
                     {
@@ -396,8 +369,8 @@ namespace IF.Batch.DTFX.Executors
         /// <summary>
         /// トランザクションを制御します。
         /// </summary>
-        /// <param name="result"></param>
-        /// <param name="element"></param>
+        /// <param name="result">反復処理の集約結果。</param>
+        /// <param name="element">成功時とエラー時のトランザクション設定。</param>
         private void ControlTransactions(ResultTypeCode result, ForEachElement element)
         {
             string transaction = result != ResultTypeCode.Error ? element.Transaction : element.TransactionOnError;

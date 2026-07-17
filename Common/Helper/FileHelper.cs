@@ -45,7 +45,6 @@ namespace IF.Batch.Common.Helper
         /// <returns>ファイルがなければ <paramref name="filepath"/>。存在する場合は自然順で最後の一致ファイル。</returns>
         public static string LastFileName(string filepath)
         {
-            // ファイルが存在しなければそのまま使用する
             if (!File.Exists(filepath))
             {
                 return filepath;
@@ -80,13 +79,11 @@ namespace IF.Batch.Common.Helper
             string dir = Path.GetDirectoryName(filepath);
             FileHelper.CreateDirectoryIfNotExists(dir);
 
-            // ファイルが存在しなければそのまま使用する
             if (!File.Exists(filepath))
             {
                 return filepath;
             }
 
-            // 新しいファイルを作成する
             string basename = Path.GetFileNameWithoutExtension(filepath);
             string ext = Path.GetExtension(filepath);
             if (".gz".Equals(ext, StringComparison.OrdinalIgnoreCase))
@@ -201,7 +198,7 @@ namespace IF.Batch.Common.Helper
             catch
             {
                 outFilePath = null;
-                // 元に戻す
+                // 移動先への書き込みに失敗した場合、入力ファイルを失わないよう元の場所へ戻します。
                 File.Move(tmpFilePath, sourceFilePath);
                 return false;
             }

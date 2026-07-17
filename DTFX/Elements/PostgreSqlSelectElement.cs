@@ -1,11 +1,3 @@
-﻿/************************************************************************
-* ファイル名:	PostgreSqlSelectElement.cs
-* 概要: 
-* 履歴:
-*	バージョン		日付		作成者		内容
-*	25.1-001-01		2013/08/02	姜　恵遠	新規作成
-*
-*************************************************************************/
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,8 +19,6 @@ namespace IF.Batch.DTFX.Elements
         /// ファイル出力パス（実行結果をファイルに出力する場合）
         /// </summary>
         public string ToFile { get; set; }
-
-        // 28.7-001-01 ADD START
         /// <summary>
         /// ヘッダ文字列
         /// </summary>
@@ -38,8 +28,6 @@ namespace IF.Batch.DTFX.Elements
         /// トレーラ文字列
         /// </summary>
         public string TrailerString { get; set; }
-        // 28.7-001-01 ADD END
-
         /// <summary>
         /// ローカルテーブル名（実行結果をテーブルに出力する場合）
         /// </summary>

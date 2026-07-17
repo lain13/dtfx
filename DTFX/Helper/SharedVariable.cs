@@ -1,11 +1,3 @@
-/************************************************************************
-* ファイル名:	SharedVariable.cs
-* 概要: 
-* 履歴:
-*	バージョン		日付		作成者		内容
-*	25.1-001-01		2013/08/02	姜　恵遠	新規作成
-*
-*************************************************************************/
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,25 +6,19 @@ using System.Text;
 namespace IF.Batch.DTFX.Service
 {
     /// <summary>
-    /// Thread-Safeの共有変数クラス
+    /// ジョブ内の値を大文字小文字を区別するキーで保持し、各操作をロックで同期します。
     /// </summary>
     public class SharedVariable
     {
-        /// <summary>
-        /// 共有変数
-        /// </summary>
         private readonly Dictionary<string, object> _globalValues = new Dictionary<string, object>();
 
-        /// <summary>
-        /// 同期化オブジェクト
-        /// </summary>
         private readonly object _syncObject = new object();
 
         /// <summary>
         /// 共有変数に値が存在するか確認します。
         /// </summary>
         /// <param name="key">キー</param>
-        /// <returns></returns>
+        /// <returns>キーが登録されている場合は <see langword="true"/>。</returns>
         public bool ContainsKey(string key)
         {
             lock (_syncObject)
@@ -50,7 +36,7 @@ namespace IF.Batch.DTFX.Service
         /// 共有変数を取得します。
         /// </summary>
         /// <param name="key">キー</param>
-        /// <returns>値</returns>
+        /// <returns>登録されている値。キーがない場合は <see langword="null"/>。</returns>
         public object GetValue(string key)
         {
             lock (_syncObject)
@@ -178,7 +164,7 @@ namespace IF.Batch.DTFX.Service
         }
 
         /// <summary>
-        /// 共有変数を設定します。
+        /// 共有変数を追加し、同じキーがある場合は値を置換します。
         /// </summary>
         /// <param name="key">キー</param>
         /// <param name="value">値</param>
@@ -200,7 +186,7 @@ namespace IF.Batch.DTFX.Service
         /// <summary>
         /// 共有変数から削除します。
         /// </summary>
-        /// <param name="key"></param>
+        /// <param name="key">削除するキー。</param>
         public void RemoveValue(string key)
         {
             lock (_syncObject)

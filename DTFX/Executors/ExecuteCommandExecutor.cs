@@ -1,11 +1,3 @@
-﻿/************************************************************************
-* ファイル名:	ExecuteCommandExecutor.cs
-* 概要: 
-* 履歴:
-*	バージョン		日付		作成者		内容
-*	25.1-001-01		2013/10/07	姜　恵遠	新規作成
-*
-*************************************************************************/
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -42,7 +34,8 @@ namespace IF.Batch.DTFX.Executors
         /// <summary>
         /// Commandを実行します。
         /// </summary>
-        /// <param name="element"></param>
+        /// <param name="element">コマンド本文、ログレベル、出力先変数を含む設定。</param>
+        /// <returns>外部プロセスの終了コード。</returns>
         private int ExecuteCommandSync(ExecuteCommandElement element)
         {
             MethodBase method = MethodInfo.GetCurrentMethod();
