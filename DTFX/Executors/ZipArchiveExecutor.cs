@@ -37,15 +37,15 @@ namespace IF.Batch.DTFX.Executors
             var element = CreateElement(rawElement);
             if (string.IsNullOrWhiteSpace(element.Filename))
             {
-                TraceLog.WriteError(method, "圧縮ファイル名が正しく有りません。");
+                Logger.WriteError(method, "圧縮ファイル名が正しく有りません。");
                 return ResultTypeCode.Error;
             }
             string zipfileFullPath = GetOutputPathFullName(element.Filename, element.Overwrite);
 
-            TraceLog.WriteDebug(method, "圧縮ファイルを保存します。名前:{0}, パスワード:{1}、上書き：{2}", zipfileFullPath, string.IsNullOrEmpty(element.Password) ? "無し" : "有り", element.Overwrite);
+            Logger.WriteDebug(method, "圧縮ファイルを保存します。名前:{0}, パスワード:{1}、上書き：{2}", zipfileFullPath, string.IsNullOrEmpty(element.Password) ? "無し" : "有り", element.Overwrite);
             if (element.Overwrite == true && File.Exists(zipfileFullPath))
             {
-                TraceLog.WriteDebug(method, "圧縮ファイルが存在しますので削除します。名前:{0}", zipfileFullPath);
+                Logger.WriteDebug(method, "圧縮ファイルが存在しますので削除します。名前:{0}", zipfileFullPath);
                 File.Delete(zipfileFullPath);
             }
             using (ZipFile zip = new ZipFile())
@@ -60,13 +60,13 @@ namespace IF.Batch.DTFX.Executors
                 {
                     foreach (var f in this.GetFiles(addFile.FilenamePattern))
                     {
-                        TraceLog.WriteDebug(method, "ZIPファイルにファイルを追加します。ファイルのパス:{0}", f.FullName);
+                        Logger.WriteDebug(method, "ZIPファイルにファイルを追加します。ファイルのパス:{0}", f.FullName);
                         zip.AddFile(f.FullName, ".");
                     }
                 }
 
                 zip.Save(zipfileFullPath);
-                TraceLog.WriteInfo(method, "圧縮ファイルを保存しました。名前:{0}, パスワード:{1}", zipfileFullPath, string.IsNullOrEmpty(element.Password) ? "無し" : "有り");
+                Logger.WriteInfo(method, "圧縮ファイルを保存しました。名前:{0}, パスワード:{1}", zipfileFullPath, string.IsNullOrEmpty(element.Password) ? "無し" : "有り");
             }
             foreach (var addFile in element.AddFileElements)
             {
@@ -74,7 +74,7 @@ namespace IF.Batch.DTFX.Executors
                 {
                     foreach (var f in this.GetFiles(addFile.FilenamePattern))
                     {
-                        TraceLog.WriteDebug(method, "ファイルを削除します。ファイルのパス:{0}", f.FullName);
+                        Logger.WriteDebug(method, "ファイルを削除します。ファイルのパス:{0}", f.FullName);
                         f.Delete();
                     }
                 }
@@ -130,7 +130,7 @@ namespace IF.Batch.DTFX.Executors
         protected override FileInfo[] GetFiles(string searchPattern)
         {
             MethodBase method = MethodInfo.GetCurrentMethod();
-            TraceLog.WriteDebug(method, "ファイルを検索します。検索パターン:{0}", searchPattern);
+            Logger.WriteDebug(method, "ファイルを検索します。検索パターン:{0}", searchPattern);
             if (File.Exists(searchPattern))
             {
                 return new FileInfo[1] { new FileInfo(searchPattern) };
@@ -140,12 +140,12 @@ namespace IF.Batch.DTFX.Executors
             FileHelper.TryExtractPathAndPattern(searchPattern, out path, out pattern);
             if (string.IsNullOrEmpty(path))
             {
-                TraceLog.WriteError(method, "対象ファイルのパスが正しくありません。{0}", searchPattern);
+                Logger.WriteError(method, "対象ファイルのパスが正しくありません。{0}", searchPattern);
                 return new FileInfo[0];
             }
             if (!Directory.Exists(path))
             {
-                TraceLog.WriteError(method, "対象ファイルのパスが正しくありません。{0}", searchPattern);
+                Logger.WriteError(method, "対象ファイルのパスが正しくありません。{0}", searchPattern);
                 return new FileInfo[0];
             }
 

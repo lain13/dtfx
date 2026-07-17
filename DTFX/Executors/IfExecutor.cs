@@ -65,11 +65,11 @@ namespace IF.Batch.DTFX.Executors
             // &amp;を&に置換する(XMLで&が表現できない場合のため
             expr = expr.Replace("&amp;", "&");
             string result = _evaluator.Evaluate(expr);
-            TraceLog.WriteDebug(method, "結果:{0}, 計算式:{1}", result, expr);
+            Logger.WriteDebug(method, "結果:{0}, 計算式:{1}", result, expr);
             if (!string.IsNullOrEmpty(element.ToVariable))
             {
                 ServiceContext.SharedVariable.SetValue(element.ToVariable, result);
-                TraceLog.WriteDebug(method, "共有変数にデータを保存しました。名前:{0}, 型:{1}", element.ToVariable, typeof(string));
+                Logger.WriteDebug(method, "共有変数にデータを保存しました。名前:{0}, 型:{1}", element.ToVariable, typeof(string));
             }
             if (result != "true")
             {

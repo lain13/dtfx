@@ -45,6 +45,8 @@ flowchart LR
 
 `Elements/` のクラスは XML 属性を保持するデータモデル、`Executors/` のクラスは実行ロジックです。`ApplicationExecutor` は生成処理を `IExecutorFactory` に委譲し、標準実装の `ExecutorFactory` が要素名と Executor の登録を一元管理します。`If` と `ForEach` の子要素にも同じファクトリが引き継がれるため、ネストした処理を含めて生成方法を差し替えられます。
 
+`ExecutorFactory` は注入された `ITraceLogger` を生成したすべての Executor へ設定します。これにより、`If` や `ForEach` の内側で生成される Executor も同じロガーを使用し、ジョブ全体のログ出力を一つの依存関係として差し替えられます。
+
 サポートする処理は次のとおりです。
 
 - SQL Server: Select、SelectScalar、Insert、Update、Delete、Bulk Insert

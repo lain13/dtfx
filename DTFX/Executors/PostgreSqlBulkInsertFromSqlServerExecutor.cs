@@ -42,7 +42,7 @@ namespace IF.Batch.DTFX.Executors
             {
                 throw new AppConfigurationException(XSqlElementConstants.ElementName.PostgreSqlBulkInsertFromSqlServer, "データソースが同の場合は利用できません。" + rawElement.ToString());
             }
-            TraceLog.WriteDebug(method, element.Value);
+            Logger.WriteDebug(method, element.Value);
             using (var command = new SqlCommand(element.Value))
             {
                 command.Connection = ServiceContext.GetConnection<SqlConnection>(element.FromDataSource);

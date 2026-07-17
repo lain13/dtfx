@@ -75,7 +75,7 @@ namespace IF.Batch.DTFX.Executors
             FileInfo[] files = GetFiles(element.FromFile);
             if (files.Length == 0)
             {
-                TraceLog.WriteInfo(method, "対象ファイルが存在しません。{0}", element.FromFile);
+                Logger.WriteInfo(method, "対象ファイルが存在しません。{0}", element.FromFile);
                 return ResultTypeCode.Success;
             }
             foreach (FileInfo file in files)
@@ -91,7 +91,7 @@ namespace IF.Batch.DTFX.Executors
                 catch (FileNotFoundException)
                 {
                     // 他のAPで処理されたファイルなので処理を成功終了する。
-                    TraceLog.WriteInfo(method, "{0} が見つかりません。", file.FullName);
+                    Logger.WriteInfo(method, "{0} が見つかりません。", file.FullName);
                     return ResultTypeCode.Success;
                 }
             }
@@ -102,7 +102,7 @@ namespace IF.Batch.DTFX.Executors
             else if (!string.IsNullOrEmpty(element.ToVariable))
             {
                 ServiceContext.SharedVariable.SetValue(element.ToVariable, list);
-                TraceLog.WriteDebug(method, "共有変数にデータを保存しました。名前:{0}, 型:{1}, 要素数:{2}", element.ToVariable, list.GetType(), list.Count);
+                Logger.WriteDebug(method, "共有変数にデータを保存しました。名前:{0}, 型:{1}, 要素数:{2}", element.ToVariable, list.GetType(), list.Count);
             }
             return result;
         }
@@ -132,7 +132,7 @@ namespace IF.Batch.DTFX.Executors
                 backupedFile = file;
             }
 
-            TraceLog.WriteDebug(method, "[{0}]を読み込みます。", backupedFile);
+            Logger.WriteDebug(method, "[{0}]を読み込みます。", backupedFile);
             bool isGzip = FileHelper.IsGzipFile(backupedFile.FullName);
             using (CsvReader reader = new CsvReader(backupedFile.FullName, ServiceContext.Encoding, isGzip))
             {
@@ -147,7 +147,7 @@ namespace IF.Batch.DTFX.Executors
                 }
                 if (skipReadRows > 0)
                 {
-                    TraceLog.WriteInfo(method, "{0}行を読み飛ばしました。", skipReadRows);
+                    Logger.WriteInfo(method, "{0}行を読み飛ばしました。", skipReadRows);
                 }
                 if (element.HasHeaders && !reader.EndOfData)
                 {
@@ -160,7 +160,7 @@ namespace IF.Batch.DTFX.Executors
                     readRows++;
                     list.Add(reader.ReadFields());
                 }
-                TraceLog.WriteInfo(method, "ファイル名:{0}, 読み込み件数:{1}, 読み飛ばし件数:{2}, ヘッダを含む:{3}", backupedFile.Name, readRows, skipReadRows, element.HasHeaders);
+                Logger.WriteInfo(method, "ファイル名:{0}, 読み込み件数:{1}, 読み飛ばし件数:{2}, ヘッダを含む:{3}", backupedFile.Name, readRows, skipReadRows, element.HasHeaders);
             }
             return result;
         }
@@ -185,7 +185,7 @@ namespace IF.Batch.DTFX.Executors
             ServiceContext.GetLocalDB().WriteToServer(list, element.ToTable, headers.Count > 0);
             string physicalTableName = ServiceContext.GetLocalDB().GetLocalDBPhysicalTableName(element.ToTable);
             ServiceContext.SharedVariable.SetValue(element.ToTable, physicalTableName);
-            TraceLog.WriteDebug(method, "共有変数にデータを保存しました。名前:{0}, 型:{1}", element.ToTable, typeof(string));
+            Logger.WriteDebug(method, "共有変数にデータを保存しました。名前:{0}, 型:{1}", element.ToTable, typeof(string));
         }
     }
 }

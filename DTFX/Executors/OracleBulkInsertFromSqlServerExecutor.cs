@@ -37,7 +37,7 @@ namespace IF.Batch.DTFX.Executors
         {
             MethodBase method = MethodInfo.GetCurrentMethod();
             var element = CreateElement(rawElement);
-            TraceLog.WriteDebug(method, element.Value);
+            Logger.WriteDebug(method, element.Value);
             if (element.FromDataSource == element.ToDataSource)
             {
                 throw new AppConfigurationException(XSqlElementConstants.ElementName.OracleBulkInsertFromSqlServer, "データソースが同の場合は利用できません。" + rawElement.ToString());

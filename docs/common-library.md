@@ -64,7 +64,7 @@ GZIP を使用する場合は reader / writer の `useGzip` を `true` にしま
 
 ## ログ
 
-`ITraceLogger` はサービスなどのアプリケーションコードへ注入するログ契約です。標準実装の `TraceLogger` は既存の静的 `TraceLog` API へ処理を委譲するため、従来のログ設定と出力形式を維持したままテスト用実装へ差し替えられます。
+`ITraceLogger` はサービスや Executor などのアプリケーションコードへ注入するログ契約です。標準実装の `TraceLogger` は既存の静的 `TraceLog` API へ処理を委譲するため、従来のログ設定と出力形式を維持したままテスト用実装へ差し替えられます。`ExecutorFactory` に渡したロガーは、ネストした制御フローを含むすべての Executor へ引き継がれます。
 
 `TraceLog` は最初の書き込み時に AppSettings を読み込みます。`trace.templatepath` が空なら `NullTraceLogWriter`、設定されていれば `SerilogTraceLogWriter` を使用します。静的 API は既存コードとの互換性のため引き続き利用できます。
 

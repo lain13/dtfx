@@ -32,6 +32,7 @@ namespace DTFX.SmokeTests
             Run("nested executor factory injection", TestNestedExecutorFactoryInjection, failures);
             Run("data transfer service injection", TestDataTransferServiceInjection, failures);
             Run("trace logger injection", TestTraceLoggerInjection, failures);
+            Run("executor logger propagation", TestExecutorLoggerPropagation, failures);
             Run("Serilog file logging", TestSerilogFileLogging, failures);
             Run("XSD and examples", TestSchemasAndExamples, failures);
 
@@ -240,6 +241,27 @@ namespace DTFX.SmokeTests
                 AssertEqual(ResultTypeCode.Error, service.ServiceResult);
                 AssertEqual(1, logger.Errors.Count);
                 AssertContains(logger.Errors[0], "Unsupported");
+            }
+        }
+
+        private static void TestExecutorLoggerPropagation()
+        {
+            var logger = new RecordingTraceLogger();
+            var factory = new ExecutorFactory(logger);
+
+            using (var context = new DataTransferContext())
+            {
+                var application = new XElement("Application",
+                    new XElement("If",
+                        new XAttribute("test", "true"),
+                        new XElement("TraceLog",
+                            new XAttribute("eventType", "information"),
+                            "nested logger")));
+                ITaskExecutor<XElement> executor = factory.CreateApplicationExecutor(context);
+
+                AssertEqual(ResultTypeCode.Success, executor.Execute(application));
+                AssertEqual(1, logger.Infos.Count);
+                AssertEqual("nested logger", logger.Infos[0]);
             }
         }
 
@@ -459,9 +481,12 @@ namespace DTFX.SmokeTests
         {
             public RecordingTraceLogger()
             {
+                Infos = new List<string>();
                 Errors = new List<string>();
                 Exceptions = new List<Exception>();
             }
+
+            public IList<string> Infos { get; private set; }
 
             public IList<string> Errors { get; private set; }
 
@@ -469,6 +494,7 @@ namespace DTFX.SmokeTests
 
             public void WriteInfo(System.Reflection.MethodBase method, string message, params object[] args)
             {
+                Infos.Add(FormatMessage(message, args));
             }
 
             public void WriteWarning(System.Reflection.MethodBase method, string message, params object[] args)

@@ -35,7 +35,7 @@ namespace IF.Batch.DTFX.Executors
         {
             MethodBase method = MethodInfo.GetCurrentMethod();
             var element = CreateElement(rawElement);
-            TraceLog.WriteDebug(method, element.Value);
+            Logger.WriteDebug(method, element.Value);
 
             using (var command = new SqlCommand(element.Value))
             {
@@ -96,7 +96,7 @@ namespace IF.Batch.DTFX.Executors
             ServiceContext.GetLocalDB().WriteToServer(reader, element.ToTable);
             string physicalTableName = ServiceContext.GetLocalDB().GetLocalDBPhysicalTableName(element.ToTable);
             ServiceContext.SharedVariable.SetValue(element.ToTable, physicalTableName);
-            TraceLog.WriteDebug(method, "共有変数にデータを保存しました。名前:{0}, 型:{1}", element.ToTable, typeof(string));
+            Logger.WriteDebug(method, "共有変数にデータを保存しました。名前:{0}, 型:{1}", element.ToTable, typeof(string));
         }
 
         /// <summary>
@@ -187,10 +187,10 @@ namespace IF.Batch.DTFX.Executors
             sw.Stop();
             if (writedFiles.Length > 0)
             {
-                TraceLog.WriteInfo(method, "ファイルを出力しました。出力件数：{0}, 処理時間：{1}", writedLine, sw.Elapsed.ToString(@"hh\:mm\:ss\.ff"));
+                Logger.WriteInfo(method, "ファイルを出力しました。出力件数：{0}, 処理時間：{1}", writedLine, sw.Elapsed.ToString(@"hh\:mm\:ss\.ff"));
                 foreach (string writedFile in writedFiles)
                 {
-                    TraceLog.WriteInfo(method, "出力先：{0}", writedFile);
+                    Logger.WriteInfo(method, "出力先：{0}", writedFile);
                 }
             }
         }
@@ -224,7 +224,7 @@ namespace IF.Batch.DTFX.Executors
                 list.Add(dict);
             }
             ServiceContext.SharedVariable.SetValue(element.ToVariable, list);
-            TraceLog.WriteDebug(method, "共有変数にデータを保存しました。名前:{0}, 型:{1}, 要素数:{2}", element.ToVariable, list.GetType(), list.Count);
+            Logger.WriteDebug(method, "共有変数にデータを保存しました。名前:{0}, 型:{1}, 要素数:{2}", element.ToVariable, list.GetType(), list.Count);
         }
     }
 }

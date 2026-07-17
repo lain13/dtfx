@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Xml.Linq;
+using IF.Batch.Common.Diagnostics;
 using IF.Batch.Common.Service;
 using IF.Batch.DTFX.Elements;
 using IF.Batch.DTFX.Exceptions;
@@ -14,9 +15,21 @@ namespace IF.Batch.DTFX.Executors
     public sealed class ExecutorFactory : IExecutorFactory
     {
         private readonly IDictionary<XName, Func<ExecutorBase>> _registrations;
+        private readonly ITraceLogger _logger;
 
         public ExecutorFactory()
+            : this(new TraceLogger())
         {
+        }
+
+        public ExecutorFactory(ITraceLogger logger)
+        {
+            if (logger == null)
+            {
+                throw new ArgumentNullException("logger");
+            }
+
+            _logger = logger;
             _registrations = new Dictionary<XName, Func<ExecutorBase>>
             {
                 { XSqlElementConstants.ElementName.SqlSelectScalar, () => new SqlSelectScalarExecutor() },
@@ -58,7 +71,9 @@ namespace IF.Batch.DTFX.Executors
         public ITaskExecutor<XElement> CreateApplicationExecutor(DataTransferContext serviceContext)
         {
             EnsureServiceContext(serviceContext);
-            return new ApplicationExecutor(this) { ServiceContext = serviceContext };
+            var executor = new ApplicationExecutor(this) { ServiceContext = serviceContext };
+            executor.SetLogger(_logger);
+            return executor;
         }
 
         public ExecutorBase CreateExecutor(XElement element, DataTransferContext serviceContext)
@@ -79,6 +94,7 @@ namespace IF.Batch.DTFX.Executors
 
             ExecutorBase executor = createExecutor();
             executor.ServiceContext = serviceContext;
+            executor.SetLogger(_logger);
             return executor;
         }
 

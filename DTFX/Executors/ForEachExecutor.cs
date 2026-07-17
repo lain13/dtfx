@@ -124,7 +124,7 @@ namespace IF.Batch.DTFX.Executors
             DataTable table = ServiceContext.GetLocalDB().SelectAllTable(element.FromTable);
             if (table == null || table.Rows.Count == 0)
             {
-                TraceLog.WriteWarning(method, "ローカルテーブル[{0}]にデータが存在しません。", element.FromTable);
+                Logger.WriteWarning(method, "ローカルテーブル[{0}]にデータが存在しません。", element.FromTable);
                 return ResultTypeCode.Success;
             }
             try
@@ -144,7 +144,7 @@ namespace IF.Batch.DTFX.Executors
                             dict.Add(table.Columns[i].ColumnName, row);
                         }
                         ServiceContext.SharedVariable.SetValue(element.Var, dict);
-                        TraceLog.WriteDebug(method, "共有変数にデータを保存しました。名前:{0}, 型:{1}, 要素数:{2}", element.Var, dict.GetType(), dict.Count);
+                        Logger.WriteDebug(method, "共有変数にデータを保存しました。名前:{0}, 型:{1}, 要素数:{2}", element.Var, dict.GetType(), dict.Count);
                         ResultTypeCode newResult = executor.Execute(element.RawElement);
                         result = MergeResultTypeCode(result, newResult);
                     }
@@ -161,8 +161,8 @@ namespace IF.Batch.DTFX.Executors
                         }
                         else
                         {
-                            TraceLog.WriteError(method, "アプリケーション実行中予期せぬエラーが発生しました。");
-                            TraceLog.WriteException(ex);
+                            Logger.WriteError(method, "アプリケーション実行中予期せぬエラーが発生しました。");
+                            Logger.WriteException(ex);
                         }
                     }
                 }
@@ -187,14 +187,14 @@ namespace IF.Batch.DTFX.Executors
             MethodBase method = MethodInfo.GetCurrentMethod();
             if (!ServiceContext.SharedVariable.ContainsKey(element.FromVariable))
             {
-                TraceLog.WriteWarning(method, "[{0}]変数が存在しません。", element.FromVariable);
+                Logger.WriteWarning(method, "[{0}]変数が存在しません。", element.FromVariable);
                 return result;
             }
             var executor = _executorFactory.CreateApplicationExecutor(ServiceContext);
             object obj = ServiceContext.SharedVariable.GetValue(element.FromVariable);
             if (!(obj is IEnumerable))
             {
-                TraceLog.WriteWarning(method, "[{0}]変数はForEachに利用できません。", element.FromVariable);
+                Logger.WriteWarning(method, "[{0}]変数はForEachに利用できません。", element.FromVariable);
                 return ResultTypeCode.Error;
             }
             IEnumerable enumerable = (IEnumerable)obj;
@@ -203,7 +203,7 @@ namespace IF.Batch.DTFX.Executors
                 foreach (object var in enumerable)
                 {
                     ServiceContext.SharedVariable.SetValue(element.Var, var);
-                    TraceLog.WriteDebug(method, "共有変数にデータを保存しました。名前:{0}, 型:{1}", element.Var, var == null ? null : var.GetType());
+                    Logger.WriteDebug(method, "共有変数にデータを保存しました。名前:{0}, 型:{1}", element.Var, var == null ? null : var.GetType());
                     try
                     {
                         result = MergeResultTypeCode(result, executor.Execute(element.RawElement));
@@ -221,8 +221,8 @@ namespace IF.Batch.DTFX.Executors
                         }
                         else
                         {
-                            TraceLog.WriteError(method, "アプリケーション実行中予期せぬエラーが発生しました。");
-                            TraceLog.WriteException(ex);
+                            Logger.WriteError(method, "アプリケーション実行中予期せぬエラーが発生しました。");
+                            Logger.WriteException(ex);
                         }
                     }
                 }
@@ -251,7 +251,7 @@ namespace IF.Batch.DTFX.Executors
             FileInfo[] files = GetFiles(element.FromFile);
             if (files.Length == 0)
             {
-                TraceLog.WriteInfo(method, "対象ファイルが存在しません。{0}", element.FromFile);
+                Logger.WriteInfo(method, "対象ファイルが存在しません。{0}", element.FromFile);
                 return ResultTypeCode.Success;
             }
             foreach (FileInfo file in files)
@@ -263,7 +263,7 @@ namespace IF.Batch.DTFX.Executors
                 catch (FileNotFoundException)
                 {
                     // 他のAPで処理されたファイルなので処理を成功終了する。
-                    TraceLog.WriteInfo(method, "{0} が見つかりません。", file.FullName);
+                    Logger.WriteInfo(method, "{0} が見つかりません。", file.FullName);
                     // 28.7-001-01 MOD START
                     // return ResultTypeCode.Success;
                     return allResult;
@@ -319,7 +319,7 @@ namespace IF.Batch.DTFX.Executors
                 backupedFile = file;
             }
 
-            TraceLog.WriteDebug(method, "[{0}]を読み込みます。", backupedFile);
+            Logger.WriteDebug(method, "[{0}]を読み込みます。", backupedFile);
             bool isGzip = FileHelper.IsGzipFile(backupedFile.FullName);
             using (CsvReader reader = new CsvReader(backupedFile.FullName, ServiceContext.Encoding, isGzip))
             {
@@ -342,7 +342,7 @@ namespace IF.Batch.DTFX.Executors
                     }
                     if (skipReadRows > 0)
                     {
-                        TraceLog.WriteInfo(method, "{0}行を読み飛ばしました。", skipReadRows);
+                        Logger.WriteInfo(method, "{0}行を読み飛ばしました。", skipReadRows);
                     }
                     // 読み込み件数
                     int readRows = 0;
@@ -352,7 +352,7 @@ namespace IF.Batch.DTFX.Executors
                         string[] fields = reader.ReadFields();
                         string[] escapedFields = EscapeSingleQuotes(fields);
                         ServiceContext.SharedVariable.SetValue(element.Var, escapedFields);
-                        TraceLog.WriteDebug(method, "共有変数にデータを保存しました。名前:{0}, 型:{1}, 要素数:{2}", element.Var, escapedFields.GetType(), escapedFields.Length);
+                        Logger.WriteDebug(method, "共有変数にデータを保存しました。名前:{0}, 型:{1}, 要素数:{2}", element.Var, escapedFields.GetType(), escapedFields.Length);
                         try
                         {
                             result = MergeResultTypeCode(result, executor.Execute(element.RawElement));
@@ -364,7 +364,7 @@ namespace IF.Batch.DTFX.Executors
                         catch (Exception ex)
                         {
                             result = ResultTypeCode.Error;
-                            TraceLog.WriteError(method, "{0}行目にエラーが存在します。", readRows + skipReadRows);
+                            Logger.WriteError(method, "{0}行目にエラーが存在します。", readRows + skipReadRows);
                             if (errorWriter != null)
                             {
                                 errorWriter.WriteLine(fields);
@@ -375,11 +375,11 @@ namespace IF.Batch.DTFX.Executors
                             }
                             else
                             {
-                                TraceLog.WriteException(ex);
+                                Logger.WriteException(ex);
                             }
                         }
                     }
-                    TraceLog.WriteInfo(method, "ファイル名:{0}, 読み込み件数:{1}, 読み飛ばし件数:{2}", backupedFile.Name, readRows, skipReadRows);
+                    Logger.WriteInfo(method, "ファイル名:{0}, 読み込み件数:{1}, 読み飛ばし件数:{2}", backupedFile.Name, readRows, skipReadRows);
                 }
                 finally
                 {

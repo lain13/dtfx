@@ -40,7 +40,7 @@ namespace IF.Batch.DTFX.Executors
                 if (!string.IsNullOrEmpty(element.ToVariable))
                 {
                     ServiceContext.SharedVariable.SetValue(element.ToVariable, result);
-                    TraceLog.WriteDebug(method, "共有変数にデータを保存しました。名前:{0}, 型:{1}", element.ToVariable, typeof(int));
+                    Logger.WriteDebug(method, "共有変数にデータを保存しました。名前:{0}, 型:{1}", element.ToVariable, typeof(int));
                 }
             }
             return ResultTypeCode.Success;

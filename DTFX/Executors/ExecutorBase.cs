@@ -32,10 +32,33 @@ namespace IF.Batch.DTFX.Executors
     public abstract class ExecutorBase : ITaskExecutor<XElement>,
         IUseServiceContext<DataTransferContext>
     {
+        private ITraceLogger _logger = new TraceLogger();
+
+        /// <summary>
+        /// この Executor が使用するトレースロガーです。
+        /// </summary>
+        protected ITraceLogger Logger
+        {
+            get { return _logger; }
+        }
+
         /// <summary>
         /// サービスコンテキスト
         /// </summary>
         public DataTransferContext ServiceContext { get; set; }
+
+        /// <summary>
+        /// ファクトリが生成した Executor に共有ロガーを設定します。
+        /// </summary>
+        internal void SetLogger(ITraceLogger logger)
+        {
+            if (logger == null)
+            {
+                throw new ArgumentNullException("logger");
+            }
+
+            _logger = logger;
+        }
 
         private ExpressionParser _parser;
         /// <summary>
@@ -264,18 +287,18 @@ namespace IF.Batch.DTFX.Executors
                     break;
                 }
                 // 2秒待機
-                TraceLog.WriteDebug(method, "ファイル移動失敗 {0} {1} {2}", i, file.FullName, ServiceContext.BackupDirectory);
+                Logger.WriteDebug(method, "ファイル移動失敗 {0} {1} {2}", i, file.FullName, ServiceContext.BackupDirectory);
                 System.Threading.Thread.Sleep(2000);
             }
             if (string.IsNullOrEmpty(outFilePath))
             {
-                TraceLog.WriteInfo(method, "ファイルの移動に失敗しました。ファイル名＝{0}, 移動先＝{1}", file.FullName, ServiceContext.BackupDirectory);
+                Logger.WriteInfo(method, "ファイルの移動に失敗しました。ファイル名＝{0}, 移動先＝{1}", file.FullName, ServiceContext.BackupDirectory);
                 return false;
             }
             else
             {
                 backupedFile = new FileInfo(outFilePath);
-                TraceLog.WriteInfo(method, "ファイルを移動しました。ファイル＝{0}, 移動先＝{1}", file.FullName, ServiceContext.BackupDirectory);
+                Logger.WriteInfo(method, "ファイルを移動しました。ファイル＝{0}, 移動先＝{1}", file.FullName, ServiceContext.BackupDirectory);
                 return true;
             }
         }
@@ -303,7 +326,7 @@ namespace IF.Batch.DTFX.Executors
             }
             if (!Directory.Exists(path))
             {
-                TraceLog.WriteError(method, "対象ファイルのパスが正しくありません。{0}", searchPattern);
+                Logger.WriteError(method, "対象ファイルのパスが正しくありません。{0}", searchPattern);
                 return new FileInfo[0];
             }
 
@@ -359,19 +382,19 @@ namespace IF.Batch.DTFX.Executors
         {
             if (XSqlElementConstants.AttributeValue.error.Equals(eventType, StringComparison.OrdinalIgnoreCase))
             {
-                TraceLog.WriteError(method, message);
+                Logger.WriteError(method, message);
             }
             else if (XSqlElementConstants.AttributeValue.information.Equals(eventType, StringComparison.OrdinalIgnoreCase))
             {
-                TraceLog.WriteInfo(method, message);
+                Logger.WriteInfo(method, message);
             }
             else if (XSqlElementConstants.AttributeValue.warning.Equals(eventType, StringComparison.OrdinalIgnoreCase))
             {
-                TraceLog.WriteWarning(method, message);
+                Logger.WriteWarning(method, message);
             }
             else if (XSqlElementConstants.AttributeValue.verbose.Equals(eventType, StringComparison.OrdinalIgnoreCase))
             {
-                TraceLog.WriteDebug(method, message);
+                Logger.WriteDebug(method, message);
             }
             else if (XSqlElementConstants.AttributeValue.off.Equals(eventType, StringComparison.OrdinalIgnoreCase))
             {

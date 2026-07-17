@@ -33,7 +33,7 @@ namespace IF.Batch.DTFX.Executors
         {
             MethodBase method = MethodInfo.GetCurrentMethod();
             var element = CreateElement(rawElement);
-            TraceLog.WriteDebug(method, element.Value);
+            Logger.WriteDebug(method, element.Value);
             using (var command = new OracleCommand(element.Value))
             {
                 command.Connection = ServiceContext.GetConnection<OracleConnection>(element.DataSource);
@@ -43,18 +43,18 @@ namespace IF.Batch.DTFX.Executors
                 if (!string.IsNullOrEmpty(element.ToVariable))
                 {
                     ServiceContext.SharedVariable.SetValue(element.ToVariable, result);
-                    TraceLog.WriteDebug(method, "共有変数にデータを保存しました。名前:{0}, 型:{1}", element.ToVariable, typeof(int));
+                    Logger.WriteDebug(method, "共有変数にデータを保存しました。名前:{0}, 型:{1}", element.ToVariable, typeof(int));
                 }
             }
             if (XSqlElementConstants.AttributeValue.commit.Equals(element.Transaction, StringComparison.OrdinalIgnoreCase))
             {
                 ServiceContext.CommitTransaction(element.DataSource);
-                TraceLog.WriteDebug(method, "コミットしました。データソース名:{0}", element.DataSource);
+                Logger.WriteDebug(method, "コミットしました。データソース名:{0}", element.DataSource);
             }
             else if (XSqlElementConstants.AttributeValue.rollback.Equals(element.Transaction, StringComparison.OrdinalIgnoreCase))
             {
                 ServiceContext.RollbackTransaction(element.DataSource);
-                TraceLog.WriteDebug(method, "ロールバックしました。データソース名:{0}", element.DataSource);
+                Logger.WriteDebug(method, "ロールバックしました。データソース名:{0}", element.DataSource);
             }
             return ResultTypeCode.Success;
         }

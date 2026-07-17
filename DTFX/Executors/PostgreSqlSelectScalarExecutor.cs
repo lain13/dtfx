@@ -36,7 +36,7 @@ namespace IF.Batch.DTFX.Executors
         {
             MethodBase method = MethodInfo.GetCurrentMethod();
             var element = CreateElement(rawElement);
-            TraceLog.WriteDebug(method, element.Value);
+            Logger.WriteDebug(method, element.Value);
             using (var command = new NpgsqlCommand(element.Value))
             {
                 command.Connection = ServiceContext.GetConnection<NpgsqlConnection>(element.DataSource);
@@ -85,7 +85,7 @@ namespace IF.Batch.DTFX.Executors
             MethodBase method = MethodInfo.GetCurrentMethod();
 
             ServiceContext.SharedVariable.SetValue(element.ToVariable, obj);
-            TraceLog.WriteDebug(method, "共有変数にデータを保存しました。名前:{0}, 型:{1}, 値:{2}", element.ToVariable, obj == null ? "null" : obj.GetType().ToString(), obj);
+            Logger.WriteDebug(method, "共有変数にデータを保存しました。名前:{0}, 型:{1}, 値:{2}", element.ToVariable, obj == null ? "null" : obj.GetType().ToString(), obj);
         }
     }
 }

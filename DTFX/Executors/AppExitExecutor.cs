@@ -35,7 +35,7 @@ namespace IF.Batch.DTFX.Executors
             AppExitElement element = CreateElement(rawElement);
             if (!string.IsNullOrWhiteSpace(element.Value))
             {
-                TraceLog.WriteInfo(method, element.Value);
+                Logger.WriteInfo(method, element.Value);
             }
             throw new AppExitException(element);
         }
