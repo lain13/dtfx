@@ -163,6 +163,7 @@ namespace DTFX.SmokeTests
             schemas.Compile();
 
             ValidateXml(Path.Combine(root, "examples", "quickstart", "QUICKSTART.XML"), schemas);
+            ValidateXml(Path.Combine(root, "examples", "csv-pipeline", "CSV_PIPELINE.XML"), schemas);
             ValidateXml(Path.Combine(root, "DTFX", "01_バッチ作成サンプル", "SAMPLE_APP.XML"), schemas);
         }
 

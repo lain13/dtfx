@@ -1,12 +1,3 @@
-﻿/************************************************************************
-* ファイル名:	FileHelper.cs
-* 概要: 
-* 履歴:
-*	バージョン		日付		作成者		内容
-*	25.1-001-01		2013/08/02	姜　恵遠	新規作成
-*	27.2-001-01		2015/06/23	姜　恵遠	Mantis:0072130対応
-*
-*************************************************************************/
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,9 +9,7 @@ using System.Security.Principal;
 namespace IF.Batch.Common.Helper
 {
     /// <summary>
-    /// ファイル操作のヘルパクラス
-    /// 
-    /// 【ソースの共通化が行われた場合は別ソリューションのプロジェクトに移動する可能性があり】
+    /// DTFX で使用するファイルとパスの操作を提供します。
     /// </summary>
     public class FileHelper
     {
@@ -53,7 +42,7 @@ namespace IF.Batch.Common.Helper
         /// 枝番が付与された最後のファイル名返却する。
         /// </summary>
         /// <param name="filepath">ファイルのパス</param>
-        /// <returns></returns>
+        /// <returns>ファイルがなければ <paramref name="filepath"/>。存在する場合は自然順で最後の一致ファイル。</returns>
         public static string LastFileName(string filepath)
         {
             // ファイルが存在しなければそのまま使用する
@@ -72,14 +61,8 @@ namespace IF.Batch.Common.Helper
             }
             string searchPattern = string.Format("{0}*{1}", basename, ext);
 
-            // 27.2-001-01 MOD START
-            //return (from file in new DirectoryInfo(pathname).GetFiles(searchPattern)
-            //        orderby file.Name descending
-            //        select file.FullName).First();
-            // 自然順でソートを行う
             return (from file in new DirectoryInfo(pathname).GetFiles(searchPattern)
                     select file.FullName).OrderByDescending(filename => filename, new LogicalStringComparer()).First();
-            // 27.2-001-01 MOD END
 
         }
 
@@ -91,7 +74,7 @@ namespace IF.Batch.Common.Helper
         /// 枝番が付与されたファイル名を作成する。
         /// </summary>
         /// <param name="filepath">ファイルのパス</param>
-        /// <returns></returns>
+        /// <returns>既存ファイルと重複しないパス。必要な場合は <c>_0</c> から始まる枝番を付けます。</returns>
         public static string NextFileName(string filepath)
         {
             string dir = Path.GetDirectoryName(filepath);
@@ -131,7 +114,7 @@ namespace IF.Batch.Common.Helper
         /// 枝番が付与されたファイル名を作成する。
         /// </summary>
         /// <param name="filepath">ファイルのパス</param>
-        /// <returns></returns>
+        /// <returns>重複しない名前で作成した、書き込み可能なファイルストリーム。</returns>
         public static FileStream CreateNextFile(string filepath)
         {
             if (filepath != NextFileName(filepath))
@@ -318,18 +301,12 @@ namespace IF.Batch.Common.Helper
         /// </summary>
         /// <param name="path">フォルダー</param>
         /// <param name="searchPattern">ファイル検索パターン</param>
-        /// <returns></returns>
+        /// <returns>ファイル名の自然順で並べた一致ファイル。</returns>
         public static FileInfo[] FindFiles(string path, string searchPattern)
         {
             DirectoryInfo di = new DirectoryInfo(path);
             FileInfo[] files = di.GetFiles(searchPattern);
-            // 27.2-001-01 MOD START
-            //var result = from file in files
-            //             orderby file.Name ascending
-            //             select file;
-            // 自然順でソートを行う
             var result = files.OrderBy(file => file.Name, new LogicalStringComparer());
-            // 27.2-001-01 MOD START
             return result.ToArray();
         }
 
@@ -339,7 +316,6 @@ namespace IF.Batch.Common.Helper
         /// <returns>fullpath</returns>
         public static string GetExecuteDirectory()
         {
-            // 現在アセンブリオブジェクトをパスを取得する。
             string path = System.Reflection.Assembly.GetExecutingAssembly().Location;
             if (string.IsNullOrEmpty(path))
             {
@@ -347,7 +323,6 @@ namespace IF.Batch.Common.Helper
             }
             else
             {
-                // フォルダのパスのみ返却する
                 return Path.GetDirectoryName(path);
             }
         }
@@ -359,7 +334,7 @@ namespace IF.Batch.Common.Helper
         /// </summary>
         /// <param name="pathTemplate">パスのテンプレート</param>
         /// <param name="dt">テンプレートの日付プレースホルダーの値</param>
-        /// <returns></returns>
+        /// <returns>日付とコマンドライン引数のプレースホルダーを置換したパス。</returns>
         public static string ResolvePathFromTemplate(string pathTemplate, DateTime dt)
         {
             if (pathTemplate.Contains("%YYYYMMDD%"))

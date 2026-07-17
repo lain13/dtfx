@@ -1,11 +1,3 @@
-/************************************************************************
-* ファイル名:	TraceLog.cs
-* 概要: 
-* 履歴:
-*	バージョン		日付		作成者		内容
-*	25.1-001-01		2013/08/02	姜　恵遠	新規作成
-*
-*************************************************************************/
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,17 +13,21 @@ using Microsoft.Win32;
 namespace IF.Batch.Common.Diagnostics
 {
     /// <summary>
-    /// 監査関連プラグイン用のログクラス。
-    /// 
-    /// 【ソースの共通化が行われた場合は別ソリューションのプロジェクトに移動する可能性があり】
+    /// DTFX のトレースログを出力する静的ファサードを提供します。
     /// </summary>
     public class TraceLog
     {
         #region シングルトン(Instance)
+        /// <summary>
+        /// インスタンスとログライターの初期化を同期するオブジェクト。
+        /// </summary>
         protected static object _syncObj = new object();
 
         private static TraceLog _instance = null;
 
+        /// <summary>
+        /// プロセス内で共有されるトレースログのインスタンスを取得します。
+        /// </summary>
         public static TraceLog Instance
         {
             get
@@ -80,9 +76,8 @@ namespace IF.Batch.Common.Diagnostics
         /// <summary>
         /// ログ用のメソッド完全修飾名取得メソッド
         /// </summary>
-        /// <param name="type">定義型</param>
         /// <param name="method">メソッド情報</param>
-        /// <returns>文字列</returns>
+        /// <returns>宣言型の完全修飾名とメソッド名を連結した文字列。</returns>
         public static string GetMethodFqdn(MethodBase method)
         {
             return string.Format("{0}.{1}", method.DeclaringType.FullName, method.Name);
@@ -90,7 +85,7 @@ namespace IF.Batch.Common.Diagnostics
         /// <summary>
         /// ログライターのセットアップをプログラム的に行う
         /// </summary>
-        /// <param name="writer"></param>
+        /// <param name="writer">まだライターが設定されていない場合に使用するライター。</param>
         public static void SetLogWriterIfNotInitialized(ITraceLogWriter writer)
         {
             if (Instance._logWriter == null)
@@ -179,6 +174,7 @@ namespace IF.Batch.Common.Diagnostics
         /// <summary>
         /// 警告メッセージを出力する
         /// </summary>
+        /// <param name="method">メソッド情報。</param>
         /// <param name="format">独自フォーマット</param>
         /// <param name="args">独自フォーマットの可変項目</param>
         public static void WriteWarning(MethodBase method, string format, params object[] args)
@@ -198,6 +194,7 @@ namespace IF.Batch.Common.Diagnostics
         /// <summary>
         /// エラーメッセージを出力する
         /// </summary>
+        /// <param name="method">メソッド情報。</param>
         /// <param name="format">独自フォーマット</param>
         /// <param name="args">独自フォーマットの可変項目</param>
         public static void WriteError(MethodBase method, string format, params object[] args)
@@ -217,6 +214,7 @@ namespace IF.Batch.Common.Diagnostics
         /// <summary>
         /// デバッグメッセージを出力する
         /// </summary>
+        /// <param name="method">メソッド情報。</param>
         /// <param name="format">独自フォーマット</param>
         /// <param name="args">独自フォーマットの可変項目</param>
         public static void WriteDebug(MethodBase method, string format, params object[] args)
@@ -226,7 +224,7 @@ namespace IF.Batch.Common.Diagnostics
         /// <summary>
         /// 例外内容を出力する
         /// </summary>
-        /// <param name="ex"></param>
+        /// <param name="ex">出力する例外。</param>
         public static void WriteException(Exception ex)
         {
             WriteException(ex, null);
@@ -234,8 +232,8 @@ namespace IF.Batch.Common.Diagnostics
         /// <summary>
         /// 例外内容を出力する
         /// </summary>
-        /// <param name="ex"></param>
-        /// <param name="appendMessage"></param>
+        /// <param name="ex">出力する例外。</param>
+        /// <param name="appendMessage">例外情報へ追加する任意のメッセージ。</param>
         public static void WriteException(Exception ex, string appendMessage)
         {
             SerilogTraceLogWriter serilogWriter = Instance.LogWriter as SerilogTraceLogWriter;
@@ -251,8 +249,8 @@ namespace IF.Batch.Common.Diagnostics
         /// <summary>
         /// トレース出力を行う。
         /// </summary>
-        /// <param name="level"></param>
-        /// <param name="trace"></param>
+        /// <param name="level">トレースイベントの重大度。</param>
+        /// <param name="trace">ライターへ渡すトレースフィールド。</param>
         [Conditional("TRACE")]
         private void WriteTrace(TraceEventType level, params string[] trace)
         {
@@ -261,8 +259,8 @@ namespace IF.Batch.Common.Diagnostics
         /// <summary>
         /// トレース出力を行う
         /// </summary>
-        /// <param name="level"></param>
-        /// <param name="ex"></param>
+        /// <param name="level">トレースイベントの重大度。</param>
+        /// <param name="ex">整形して出力する例外。</param>
         [Conditional("TRACE")]
         private void WriteTrace(TraceEventType level, Exception ex)
         {
@@ -272,8 +270,9 @@ namespace IF.Batch.Common.Diagnostics
         /// <summary>
         /// 例外発生時の定型文字列を作成する
         /// </summary>
-        /// <param name="ex"></param>
-        /// <param name="appendMessage"></param>
+        /// <param name="ex">メッセージへ含める例外。</param>
+        /// <param name="appendMessage">例外情報へ追加する任意のメッセージ。</param>
+        /// <returns>ユーザー、例外型、メッセージ、スタックトレースなどを含む文字列。</returns>
         public static string CreateTraceMessage(Exception ex, string appendMessage = null)
         {
             StringBuilder builder = new StringBuilder();

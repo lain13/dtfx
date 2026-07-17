@@ -1,13 +1,3 @@
-﻿/************************************************************************
-* ファイル名:	CsvReader.cs
-* 概要:CSVFile読み込み共通クラス
-*
-* 履歴:
-*	バージョン		日付		作成者		内容
-*	24.1-001-01		2012/04/17	姜　恵遠	新規作成
-*   25.1-001-02     2013/10/07  姜　恵遠    プロパティ追加
-*
-*************************************************************************/
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -335,7 +325,7 @@ namespace IF.Batch.Common.Helper
         /// <summary>
         /// 1行文字列として読み出します。
         /// </summary>
-        /// <returns></returns>
+        /// <returns>現在位置から読み取った 1 行。ストリームの末尾では <see langword="null"/>。</returns>
         public string ReadLine()
         {
             return _parser.ReadLine();
@@ -344,7 +334,7 @@ namespace IF.Batch.Common.Helper
         /// <summary>
         /// 現在のカーソル位置からStreamから全ての文字列を取り出します。
         /// </summary>
-        /// <returns></returns>
+        /// <returns>現在位置からストリームの末尾までの文字列。</returns>
         public string ReadToEnd()
         {
             return _parser.ReadToEnd();
@@ -363,7 +353,7 @@ namespace IF.Batch.Common.Helper
         /// <summary>
         /// 固定長フィールドの場合のフィールド幅を設定する。
         /// </summary>
-        /// <param name="fieldWidths"></param>
+        /// <param name="fieldWidths">各固定長フィールドの幅。最後の要素には可変長を示す負数を指定できます。</param>
         public void SetFieldWidth(int[] fieldWidths)
         {
             _parser.SetFieldWidths(fieldWidths);

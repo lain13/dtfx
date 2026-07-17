@@ -9,8 +9,10 @@ IF NOT EXIST "%DTFX_EXE%" (
   EXIT /B 1
 )
 
+IF NOT EXIST "%SCRIPT_DIR%output" MD "%SCRIPT_DIR%output"
+
 PUSHD "%APP_DIR%" >NUL
-"%DTFX_EXE%" -appdirectory "%APP_DIR%" -appid QUICKSTART
+"%DTFX_EXE%" -appdirectory "%APP_DIR%" -appid CSV_PIPELINE
 SET "EXIT_CODE=%ERRORLEVEL%"
 POPD
 EXIT /B %EXIT_CODE%

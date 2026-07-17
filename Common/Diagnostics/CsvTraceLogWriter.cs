@@ -1,11 +1,3 @@
-/************************************************************************
-* ファイル名:	CsvTraceLogWriter.cs
-* 概要: CSV形式でトレースログを出力するライタークラス
-* 履歴:
-*	バージョン		日付		作成者		内容
-*	25.1-001-01		2013/08/02	姜　恵遠	新規作成
-*
-*************************************************************************/
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,6 +19,9 @@ namespace IF.Batch.Common.Diagnostics
         #endregion
 
         #region コンストラクタ
+        /// <summary>
+        /// CSV 形式のトレースライターを初期化します。
+        /// </summary>
         public CsvTraceLogWriter()
         {
 
@@ -46,10 +41,10 @@ namespace IF.Batch.Common.Diagnostics
         /// <summary>
         /// CSV形式でフォーマットを行うメソッド
         /// </summary>
-        /// <param name="traceEventType"></param>
-        /// <param name="traceDateTime"></param>
-        /// <param name="traces"></param>
-        /// <returns></returns>
+        /// <param name="traceEventType">トレースイベントの重大度。</param>
+        /// <param name="traceDateTime">イベントが発生した日時。</param>
+        /// <param name="traces">CSV の後続フィールドとして出力する値。</param>
+        /// <returns>日時、重大度、スレッド ID、指定された値を含む CSV レコード。</returns>
         protected override string FormatTraceLog(TraceEventType traceEventType, DateTime traceDateTime, params string[] traces)
         {
             List<string> tokens = new List<string>();

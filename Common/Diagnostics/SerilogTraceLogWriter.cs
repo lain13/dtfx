@@ -10,7 +10,7 @@ using Serilog.Events;
 namespace IF.Batch.Common.Diagnostics
 {
     /// <summary>
-    /// Serilog-backed implementation of the legacy trace writer contract.
+    /// Serilog を使用して従来互換の CSV トレースログを出力します。
     /// </summary>
     public sealed class SerilogTraceLogWriter : ITraceLogWriter, IDisposable
     {
@@ -18,6 +18,12 @@ namespace IF.Batch.Common.Diagnostics
         private bool _enabled;
         private bool _disposed;
 
+        /// <summary>
+        /// 出力先、ログレベル、ローテーション、文字エンコーディングを設定します。
+        /// </summary>
+        /// <param name="config">トレースログの構成。</param>
+        /// <exception cref="ArgumentNullException"><paramref name="config"/> が <see langword="null"/> です。</exception>
+        /// <exception cref="ArgumentException">ログファイルのパスが空です。</exception>
         public void Initialize(ITraceLogConfiguration config)
         {
             if (config == null)
@@ -60,6 +66,11 @@ namespace IF.Batch.Common.Diagnostics
             AppDomain.CurrentDomain.ProcessExit += CloseOnExit;
         }
 
+        /// <summary>
+        /// 指定された重大度でトレースイベントを書き込みます。
+        /// </summary>
+        /// <param name="level">トレースイベントの重大度。</param>
+        /// <param name="trace">メソッド名とメッセージを含むトレースフィールド。</param>
         public void WriteTrace(TraceEventType level, params string[] trace)
         {
             if (_logger == null || _disposed || !_enabled)
@@ -75,6 +86,11 @@ namespace IF.Batch.Common.Diagnostics
                 .Write(ToLogEventLevel(level), "{TraceMessage:l}", message);
         }
 
+        /// <summary>
+        /// 例外と任意の補足メッセージをエラーレベルで書き込みます。
+        /// </summary>
+        /// <param name="exception">出力する例外。<see langword="null"/> の場合は何も出力しません。</param>
+        /// <param name="appendMessage">例外メッセージの代わりに出力する補足メッセージ。</param>
         public void WriteException(Exception exception, string appendMessage)
         {
             if (_logger == null || _disposed || !_enabled || exception == null)
@@ -90,6 +106,9 @@ namespace IF.Batch.Common.Diagnostics
                 .Error(exception, "{TraceMessage:l}", message);
         }
 
+        /// <summary>
+        /// バッファーをフラッシュし、ロガーが使用するリソースを解放します。
+        /// </summary>
         public void Dispose()
         {
             if (_disposed)

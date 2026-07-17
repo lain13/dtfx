@@ -1,11 +1,3 @@
-﻿/************************************************************************
-* ファイル名:	AppConfigConfigurationProvider.cs
-* 概要: 
-* 履歴:
-*	バージョン		日付		作成者		内容
-*	25.1-001-01		2013/08/02	姜　恵遠	新規作成
-*
-*************************************************************************/
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,6 +8,9 @@ using C = IF.Batch.Common.Configuration.AppConfigConstants;
 
 namespace IF.Batch.Common.Diagnostics
 {
+    /// <summary>
+    /// AppSettings からトレースログとイベントログの構成を読み取ります。
+    /// </summary>
     public class AppConfigConfigurationProvider : ITraceLogConfiguration, ITraceEventConfiguration
     {
         /// <summary>
@@ -167,7 +162,7 @@ namespace IF.Batch.Common.Diagnostics
                     }
                     catch
                     {
-                        // Do nothing.
+                        // 無効なエンコーディング名は未指定として扱い、ライター側の既定値へフォールバックする。
                     }
                 }
                 return encoding;

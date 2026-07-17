@@ -1,13 +1,3 @@
-﻿/************************************************************************
-* ファイル名:	CSVWriter.cs
-* 概要:CSVFile書き込み共通クラス
-*
-* 履歴:
-*	バージョン		日付		作成者		内容
-*	24.1-001-01		2013/01/21	姜　恵遠	新規作成
-*   25.1-001-02     2013/10/07  姜　恵遠    NewLine⇒RowDelimiterに変更
-*
-*************************************************************************/
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -194,6 +184,7 @@ namespace IF.Batch.Common.Helper
         #region メソッド定義
         /// <summary>
         /// CSVFileWriterを既定値に初期化します。
+        /// </summary>
         /// <param name="path">String.解析するファイルの絶対パス。</param>
         /// <param name="encoding">
         /// System.Text.Encoding.ファイルからエンコーディングを判断できない場合に使用する文字エンコーディング。
@@ -201,13 +192,18 @@ namespace IF.Batch.Common.Helper
         /// <param name="append">既存のファイルに追加する場合true。</param>
         /// <param name="useGzip">Gzipファイルの場合true。</param>
         /// <param name="bufferSize">バッファーのサイズを指定します。</param>
-        /// </summary>
         protected virtual void Initialize(string path, Encoding encoding, bool append, bool useGzip, int bufferSize)
         {
             FileStream fileStream = File.Open(path, append ? FileMode.Append : FileMode.Create, FileAccess.Write, FileShare.Read);
             Initialize(new BufferedStream(fileStream, bufferSize), encoding, useGzip);
         }
 
+        /// <summary>
+        /// 指定されたストリームへ書き込む CSV ライターを初期化します。
+        /// </summary>
+        /// <param name="stream">書き込み先ストリーム。</param>
+        /// <param name="encoding">出力に使用する文字エンコーディング。</param>
+        /// <param name="useGzip">GZIP 圧縮する場合は <see langword="true"/>。</param>
         protected virtual void Initialize(Stream stream, Encoding encoding, bool useGzip)
         {
             if (useGzip)
@@ -226,6 +222,7 @@ namespace IF.Batch.Common.Helper
         /// 現在行のすべてのフィールドを書き込みます。
         /// </summary>
         /// <param name="fields">現在の行のフィールド値を格納する文字列の配列。</param>
+        /// <param name="newLine">書き込み後に行を終了する場合は <see langword="true"/>。</param>
         public virtual void Write(string[] fields, bool newLine = false)
         {
             try
@@ -249,7 +246,7 @@ namespace IF.Batch.Common.Helper
         /// <summary>
         /// 現在行のすべてのフィールドを書き込みます。
         /// </summary>
-        /// <param name="tokens">現在の行のフィールド値を格納する文字列の配列。</param>
+        /// <param name="fields">現在の行のフィールド値を格納する文字列の配列。</param>
         public void WriteLine(string[] fields)
         {
             Write(fields, true);
@@ -283,7 +280,7 @@ namespace IF.Batch.Common.Helper
         /// <summary>
         /// 現在行のすべてのフィールドを書き込みます。
         /// </summary>
-        /// <param name="tokens">現在の行のフィールド値を格納する配列。</param>
+        /// <param name="fields">現在の行のフィールド値を格納する配列。</param>
         public void WriteLine(IEnumerable<object> fields)
         {
             Write(fields, true);

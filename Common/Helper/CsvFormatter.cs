@@ -1,12 +1,3 @@
-﻿/************************************************************************
-* ファイル名:	CsvFormatter.cs
-* 概要: 
-* 履歴:
-*	バージョン		日付		作成者		内容
-*	25.1-001-01		2013/08/02	姜　恵遠	新規作成
-*   25.1-001-02     2013/10/07  姜　恵遠    NewLine⇒RowDelimiterに変更
-*
-*************************************************************************/
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,6 +5,9 @@ using System.Text;
 
 namespace IF.Batch.Common.Helper
 {
+    /// <summary>
+    /// フィールド値を区切り文字、引用符、空白の設定に従って CSV 文字列へ変換します。
+    /// </summary>
     public class CsvFormatter
     {
         /// <summary>
@@ -70,6 +64,7 @@ namespace IF.Batch.Common.Helper
         /// <param name="delimiter">項目セパレータ</param>
         /// <param name="rowDelimiter">改行文字</param>
         /// <param name="alwaysFieldsEncloseInQuotes">true:項目をダブルクォーテーションで囲む</param>
+        /// <param name="trimWhiteSpace">フィールドの前後の空白を除去する場合は <see langword="true"/>。</param>
         public CsvFormatter(string delimiter = null, string rowDelimiter = null, bool alwaysFieldsEncloseInQuotes = false, bool trimWhiteSpace = false)
         {
             this.Delimiter = delimiter ?? DEFAULT_DELIMITER;
@@ -125,6 +120,7 @@ namespace IF.Batch.Common.Helper
         /// <summary>
         /// 文字列を書き込みます。
         /// </summary>
+        /// <param name="builder">整形結果を追加する文字列ビルダー。</param>
         /// <param name="field">対象文字列</param>
         protected virtual void WriteField(StringBuilder builder, string field)
         {

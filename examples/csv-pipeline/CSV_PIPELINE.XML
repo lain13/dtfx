@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Application xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:noNamespaceSchemaLocation="../../DTFX/XMLSchema/Application.xsd">
+  <TraceLog eventType="information">CSV pipeline started.</TraceLog>
+  <LoadCSV fromFile="customers.csv" hasHeaders="true" toVariable="customers" />
+  <ForEach var="customer" fromVariable="customers" stopOnError="true">
+    <TraceLog eventType="information">Customer ID=${customer[0]}, NAME=${customer[1]}, EMAIL=${customer[2]}</TraceLog>
+  </ForEach>
+  <ZipArchive filename="customers.zip" overwrite="true">
+    <AddFile filenamePattern="${inputdirectory}\customers.csv" deletedOnArchived="false" />
+  </ZipArchive>
+  <AppExit result="0">CSV pipeline completed.</AppExit>
+</Application>

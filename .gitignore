@@ -24,6 +24,7 @@ packages/
 *.lib
 *.exp
 *.obj
+examples/**/output/
 
 ## ReSharper
 _ReSharper*/

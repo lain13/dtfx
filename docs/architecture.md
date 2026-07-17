@@ -26,6 +26,10 @@ flowchart LR
 
 `IF.Batch.DTFX` は `IF.Batch.Common` をプロジェクト参照し、テストプロジェクトは両方を参照します。
 
+### ビルド構成のマッピング
+
+`IF.Batch.DTFX` は `Any CPU` と `x86` の両方を持ちます。一方、マネージドコードだけで構成される `IF.Batch.Common` は、ソリューションが `x86` の場合も `Any CPU` へマッピングされます。Debug / Release の両方で `Build.0` が設定されているため、ソリューションビルドから Common が除外されることはありません。対応表とコマンド例は [`common-library.md`](common-library.md#ビルド構成) を参照してください。
+
 ## 実行フロー
 
 1. `Program` が `-appid` と `-appdirectory` を解析します。
@@ -74,9 +78,11 @@ flowchart LR
 
 - 対象フレームワーク: .NET Framework 4.6.2
 - SQL Server: `System.Data.SqlClient`
-- Oracle: `Oracle.ManagedDataAccess` 19.18
-- PostgreSQL: `Npgsql` 4.1.12
-- ZIP: DotNetZip 1.15.0
+- Oracle: `Oracle.ManagedDataAccess` 19.31.0
+- PostgreSQL: `Npgsql` 4.1.14
+- 条件式: JexlNet 2.9.3
+- ZIP: DotNetZip 1.16.0
+- ファイルログ: Serilog 2.12.0 / Serilog.Sinks.File 5.0.0
 - パッケージ管理: `packages.config`
 
 古いランタイムとデータプロバイダーは、既存環境との互換性を保つための基準です。メジャーバージョンを更新する場合は、実データベースを使った統合テストを伴う独立した変更として扱ってください。

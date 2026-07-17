@@ -1,11 +1,3 @@
-﻿/************************************************************************
-* ファイル名:	ThreadSafeTraceLogWriter.cs
-* 概要: 
-* 履歴:
-*	バージョン		日付		作成者		内容
-*	25.1-001-01		2013/08/02	姜　恵遠	新規作成
-*
-*************************************************************************/
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -44,10 +36,10 @@ namespace IF.Batch.Common.Diagnostics
         /// </summary>
         private Stream _baseStream = null;
         /// <summary>
-        /// <summary>
         /// ファイルのAutoFlush設定
         /// </summary>
         private bool _autoFlush = false;
+        /// <summary>
         /// トレースログのエンコーディング
         /// </summary>
         private static Encoding _encoding = Encoding.Default;
@@ -142,8 +134,8 @@ namespace IF.Batch.Common.Diagnostics
 
         /// <summary>
         /// ストリームを作成する。
-        /// <param name="append">既存のファイルに追加</param>
         /// </summary>
+        /// <param name="append">既存のファイルに追加する場合は <see langword="true"/>。</param>
         private void PopulateStream(bool append)
         {
             // ファイルパスを求める
@@ -185,8 +177,8 @@ namespace IF.Batch.Common.Diagnostics
         /// アンロードイベントハンドラ
         /// トレースファイルを閉じる。
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <param name="sender">イベントを発生させたアプリケーションドメイン。</param>
+        /// <param name="e">イベントデータ。</param>
         void CurrentDomain_DomainUnload(object sender, EventArgs e)
         {
             _traceLock.EnterWriteLock();
@@ -238,6 +230,13 @@ namespace IF.Batch.Common.Diagnostics
             }
         }
 
+        /// <summary>
+        /// トレースイベントをファイルへ書き込む文字列に整形します。
+        /// </summary>
+        /// <param name="traceEventType">トレースイベントの重大度。</param>
+        /// <param name="traceDateTime">イベントが発生した日時。</param>
+        /// <param name="traces">整形対象のトレースフィールド。</param>
+        /// <returns>ファイルへ書き込む整形済み文字列。</returns>
         protected virtual string FormatTraceLog(TraceEventType traceEventType, DateTime traceDateTime, params string[] traces)
         {
             StringBuilder builder = new StringBuilder();

@@ -177,6 +177,8 @@ Select の `toVariable` を列挙する場合、各行は辞書なので `${row[
 <LoadCSV fromFile="users.csv" hasHeaders="true" toTable="users_work" />
 ```
 
+`toVariable` と `ForEach@fromVariable` を組み合わせたデータベース不要の例は [`examples/csv-pipeline`](../examples/csv-pipeline/) で実行できます。
+
 ## TraceLog と AppExit
 
 `TraceLog` の本文をログへ出力します。

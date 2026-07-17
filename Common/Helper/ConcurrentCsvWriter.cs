@@ -1,14 +1,3 @@
-﻿/************************************************************************
-* ファイル名:	ConcurrentCsvWriter.cs
-* 概要:CSVFile書き込み共通クラス
-*
-* 履歴:
-*	バージョン		日付		作成者		内容
-*	24.1-001-01		2013/08/02	姜　恵遠	新規作成
-*   25.1-001-02     2013/10/07  姜　恵遠    NewLine⇒RowDelimiterに変更
-*   21.3-001-01     2021/07/05  姜　恵遠    Biz-A Step1.5対応
-*
-*************************************************************************/
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,7 +15,13 @@ namespace IF.Batch.Common.Helper
     {
 
         #region フィールド
+        /// <summary>
+        /// 現在の出力ファイルへ書き込むライター。
+        /// </summary>
         protected CsvWriter _writer;
+        /// <summary>
+        /// フィールドを CSV 形式へ変換するフォーマッター。
+        /// </summary>
         protected CsvFormatter _formatter;
         private long _maxWriteRows = long.MaxValue;
         private string _path = null;
@@ -34,9 +29,7 @@ namespace IF.Batch.Common.Helper
         private bool _useGzip = false;
         private bool _append = false;
         private bool _alwaysCreateFile = false;
-        // 21.3-001-01 ADD START
         private string[] _headerStrings = null;
-        // 21.3-001-01 ADD END
         private List<string> _writedFiles = new List<string>();
         private object _syncObject = new object();
         private bool _rollbackFile = false;
@@ -95,7 +88,6 @@ namespace IF.Batch.Common.Helper
             }
         }
 
-        // 21.3-001-01 ADD START
         /// <summary>
         /// ヘッダ文字列
         /// </summary>
@@ -121,7 +113,6 @@ namespace IF.Batch.Common.Helper
         		return _headerStrings != null && _headerStrings.Length != 0;
         	}
         }
-        // 21.3-001-01 ADD END
         
         /// <summary>
         /// 区切り記号入りファイルに出力する場合に、
@@ -294,6 +285,7 @@ namespace IF.Batch.Common.Helper
         /// 現在行のすべてのフィールドを書き込みます。
         /// </summary>
         /// <param name="fields">現在の行のフィールド値を格納する文字列の配列。</param>
+        /// <param name="newLine">書き込み後に行を終了する場合は <see langword="true"/>。</param>
         public virtual void Write(string[] fields, bool newLine = false)
         {
             lock (_syncObject)
@@ -306,7 +298,7 @@ namespace IF.Batch.Common.Helper
         /// <summary>
         /// 現在行のすべてのフィールドを書き込みます。
         /// </summary>
-        /// <param name="tokens">現在の行のフィールド値を格納する文字列の配列。</param>
+        /// <param name="fields">現在の行のフィールド値を格納する文字列の配列。</param>
         public void WriteLine(string[] fields)
         {
             Write(fields, true);
@@ -329,7 +321,7 @@ namespace IF.Batch.Common.Helper
         /// <summary>
         /// 現在行のすべてのフィールドを書き込みます。
         /// </summary>
-        /// <param name="tokens">現在の行のフィールド値を格納する配列。</param>
+        /// <param name="fields">現在の行のフィールド値を格納する配列。</param>
         public void WriteLine(IEnumerable<object> fields)
         {
             Write(fields);

@@ -12,6 +12,7 @@
 - GitHub Actions によるビルドと検証のワークフロー
 - コントリビューションガイドとセキュリティポリシー
 - 構成ファイルおよび XML 要素のリファレンス
+- Common ライブラリの API ガイドと、CSV から ZIP を作成する実行可能なサンプル
 - MIT License
 
 ### Changed
@@ -22,6 +23,7 @@
 - `maxreadrows` 設定を CSV 読み込みとファイルベースの `ForEach` に適用
 - `If` の式評価エンジンを旧式の Microsoft.JScript から JexlNet へ変更し、JEXL 文法のドキュメントとサンプルを更新
 - Git リポジトリに不要な Subversion / AnkhSVN メタデータを削除
+- Common のレガシー変更履歴コメントと空の XML ドキュメントを整理し、公開 API の説明を補完
 
 ### Fixed
 
@@ -34,3 +36,5 @@
 - PostgreSQL Executor の誤ったエラー要素名
 - 外部コマンドの出力バッファによるデッドロックの可能性
 - コードコメントとエラーメッセージの誤記
+- `x86` ソリューション構成で `IF.Batch.Common` がビルド対象から外れていたマッピング
+- スモークテスト出力に JEXL 実行時依存の `System.Memory.dll` が含まれない問題

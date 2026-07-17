@@ -1,11 +1,3 @@
-﻿/************************************************************************
-* ファイル名:	ConfigurationManagerHelper.cs
-* 概要: 
-* 履歴:
-*	バージョン		日付		作成者		内容
-*	25.1-001-01		2013/08/02	姜　恵遠	新規作成
-*
-*************************************************************************/
 using System;
 using System.Collections.Specialized;
 using System.Configuration;
@@ -15,6 +7,9 @@ using System.Collections.Generic;
 
 namespace IF.Batch.Common.Helper
 {
+    /// <summary>
+    /// 外部構成ファイルの読み込みと、実行中の AppSettings のマージを支援します。
+    /// </summary>
     public class ConfigurationManagerHelper
     {
         private sealed class ConfigurationManagerProxy : IInternalConfigSystem
@@ -59,6 +54,11 @@ namespace IF.Batch.Common.Helper
             }
         }
 
+        /// <summary>
+        /// 指定されたファイルを実行ファイル形式の構成として開きます。
+        /// </summary>
+        /// <param name="filename">読み込む構成ファイルのパス。</param>
+        /// <returns>読み込まれた構成。</returns>
         public static System.Configuration.Configuration OpenMappedExeConfiguration(string filename)
         {
             ExeConfigurationFileMap exeFileMap = new ExeConfigurationFileMap { ExeConfigFilename = filename };
@@ -94,7 +94,7 @@ namespace IF.Batch.Common.Helper
         /// <summary>
         /// 環境設定を編集可能な状態に変更する。
         /// </summary>
-        /// <returns></returns>
+        /// <returns>実行中に更新できる AppSettings コレクション。</returns>
         private static NameValueCollection GetEditableAppSettings()
         {
             NameValueCollection appsettings = ConfigurationManager.AppSettings;

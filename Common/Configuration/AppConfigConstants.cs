@@ -1,12 +1,3 @@
-/************************************************************************
-* ファイル名:	AppConfigConstants.cs
-* 概要: 
-* 履歴:
-*	バージョン		日付		作成者		内容
-*	25.1-001-01		2013/08/02	姜　恵遠	新規作成
-*   21.3-001-01     2021/07/05  姜　恵遠    Biz-A Step1.5対応
-*
-*************************************************************************/
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,8 +11,14 @@ namespace IF.Batch.Common.Configuration
     public static class AppConfigConstants
     {
         #region AppSettingsのキー
+        /// <summary>
+        /// AppSettings で使用するキーを定義します。
+        /// </summary>
         public static class AppSettings
         {
+            /// <summary>
+            /// トレースログに関する AppSettings キーを定義します。
+            /// </summary>
             public static class Trace
             {
                 /// <summary>
@@ -196,16 +193,17 @@ namespace IF.Batch.Common.Configuration
             /// </summary>
             public static readonly string Appdirectory = "appdirectory";
 
-            // 21.3-001-01 ADD START
             /// <summary>
             /// BOMなし(UTF-8文字コードのみ)
             /// </summary>
             public static readonly string WithoutBom = "withoutbom";
-            // 21.3-001-01 ADD END
         }
         #endregion
 
         #region connectionStringsの名前
+        /// <summary>
+        /// ConnectionStrings で使用する既定の接続名を定義します。
+        /// </summary>
         public static class ConnectionStrings
         {
             /// <summary>
