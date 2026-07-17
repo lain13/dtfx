@@ -30,6 +30,7 @@ namespace DTFX.SmokeTests
             Run("executor factory mappings", TestExecutorFactoryMappings, failures);
             Run("executor factory injection", TestExecutorFactoryInjection, failures);
             Run("nested executor factory injection", TestNestedExecutorFactoryInjection, failures);
+            Run("data transfer service injection", TestDataTransferServiceInjection, failures);
             Run("Serilog file logging", TestSerilogFileLogging, failures);
             Run("XSD and examples", TestSchemasAndExamples, failures);
 
@@ -183,6 +184,39 @@ namespace DTFX.SmokeTests
                 AssertEqual("Nested", string.Join(",", factory.ExecutedElementNames));
                 AssertSame(context, factory.ServiceContexts[0]);
             }
+        }
+
+        private static void TestDataTransferServiceInjection()
+        {
+            var context = new DataTransferContext
+            {
+                RootElement = new XElement("Application", new XElement("Injected"))
+            };
+            var contextFactory = new StubDataTransferContextFactory(context, true);
+            var executorFactory = new RecordingExecutorFactory(ResultTypeCode.Warning);
+            var service = new DataTransferService(contextFactory, executorFactory);
+
+            AssertEqual(true, service.EnsureServiceConfigurations());
+            AssertSame(context, service.ServiceContext);
+            AssertEqual(true, service.InitService());
+
+            service.ExecuteService();
+            AssertEqual(ResultTypeCode.Warning, service.ServiceResult);
+            AssertEqual("Injected", string.Join(",", executorFactory.ExecutedElementNames));
+            AssertEqual(1, contextFactory.CreateCount);
+
+            service.Dispose();
+            service.Dispose();
+            try
+            {
+                service.InitService();
+            }
+            catch (ObjectDisposedException)
+            {
+                return;
+            }
+
+            throw new InvalidOperationException("Expected a disposed service to reject initialization.");
         }
 
         private static void AssertEvaluationFails(ExpressionEvaluator evaluator, string expression)
@@ -372,6 +406,27 @@ namespace DTFX.SmokeTests
             public override ResultTypeCode Execute(XElement parameter)
             {
                 _onExecute(parameter);
+                return _result;
+            }
+        }
+
+        private sealed class StubDataTransferContextFactory : IDataTransferContextFactory
+        {
+            private readonly DataTransferContext _context;
+            private readonly bool _result;
+
+            public StubDataTransferContextFactory(DataTransferContext context, bool result)
+            {
+                _context = context;
+                _result = result;
+            }
+
+            public int CreateCount { get; private set; }
+
+            public bool TryCreate(out DataTransferContext context)
+            {
+                CreateCount++;
+                context = _context;
                 return _result;
             }
         }

@@ -25,6 +25,7 @@
 - Git リポジトリに不要な Subversion / AnkhSVN メタデータを削除
 - Common のレガシー変更履歴コメントと空の XML ドキュメントを整理し、公開 API の説明を補完
 - Executor の生成責務を `IExecutorFactory` に分離し、ネストした制御フローとサービスから差し替え可能に変更
+- AppSettings、接続文字列、ジョブ XML の読み込みを `DataTransferContextFactory` に分離し、`DataTransferService` を実行ライフサイクルの調整に限定
 
 ### Fixed
 

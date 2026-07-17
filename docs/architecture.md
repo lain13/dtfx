@@ -34,7 +34,7 @@ flowchart LR
 
 1. `Program` が `-appid` と `-appdirectory` を解析します。
 2. 実行ファイルの `app.config`、任意の `{appid}.config`、コマンドライン引数を AppSettings にマージします。
-3. `DataTransferService` が `{appid}.xml` を読み込み、共通設定を `DataTransferContext` に反映します。
+3. `DataTransferContextFactory` が `{appid}.xml` と共通設定を読み込み、実行単位の `DataTransferContext` を構成します。
 4. `ApplicationExecutor` が `<Application>` の子要素を上から順に処理します。
 5. 要素名に対応する Executor が SQL、ファイル、または制御フローの処理を実行します。
 6. 最終結果がエラーなら未確定トランザクションをロールバックし、成功または警告ならコミットします。
@@ -56,7 +56,7 @@ flowchart LR
 
 要素名と属性の詳細は [`xml-elements.md`](xml-elements.md) を参照してください。複数の処理結果は `Error > Warning > Success` の優先順位で統合されます。
 
-`DataTransferService` は既定コンストラクタで標準構成を組み立てます。また、`IDataTransferContextFactory` と `IExecutorFactory` を受け取るコンストラクタを公開しており、テストや将来の DI コンテナから実行時依存関係を渡せます。
+`DataTransferService` は既定コンストラクタで標準構成を組み立て、構成確認・初期化・実行・破棄のライフサイクルだけを調整します。AppSettings、接続文字列、ジョブ XML、ファイル関連オプションの読み込みは `IDataTransferContextFactory` の標準実装へ分離されています。サービスは `IDataTransferContextFactory` と `IExecutorFactory` を受け取るコンストラクタも公開しており、テストや将来の DI コンテナから実行時依存関係を渡せます。
 
 ## 共有コンテキストとトランザクション
 
