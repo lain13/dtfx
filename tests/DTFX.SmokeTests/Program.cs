@@ -6,6 +6,7 @@ using System.Xml;
 using System.Xml.Linq;
 using System.Xml.Schema;
 using IF.Batch.Common.Configuration;
+using IF.Batch.Common.Diagnostics;
 using IF.Batch.Common.Helper;
 using IF.Batch.DTFX.Executors;
 
@@ -21,6 +22,7 @@ namespace DTFX.SmokeTests
             Run("argument parsing edge cases", TestArgumentParsingEdgeCases, failures);
             Run("CSV formatting", TestCsvFormatting, failures);
             Run("CSV enumerable is read once", TestCsvEnumerableIsReadOnce, failures);
+            Run("Serilog file logging", TestSerilogFileLogging, failures);
             Run("XSD and examples", TestSchemasAndExamples, failures);
 
             if (failures.Count == 0)
@@ -96,6 +98,34 @@ namespace DTFX.SmokeTests
             AssertEqual("first,2,", formatter.ToCsv(fields).ToString());
         }
 
+        private static void TestSerilogFileLogging()
+        {
+            string directory = Path.Combine(Path.GetTempPath(), "dtfx-serilog-" + Guid.NewGuid().ToString("N"));
+            string path = Path.Combine(directory, "trace_%YYYYMMDD%.log");
+            Directory.CreateDirectory(directory);
+            try
+            {
+                using (var writer = new SerilogTraceLogWriter())
+                {
+                    writer.Initialize(new TestTraceLogConfiguration(path));
+                    writer.WriteTrace(System.Diagnostics.TraceEventType.Information,
+                        "DTFX.SmokeTests.Program.TestSerilogFileLogging", "message,with comma");
+                    writer.WriteException(new InvalidOperationException("expected failure"), "operation failed");
+                }
+
+                string resolvedPath = FileHelper.ResolvePathFromTemplate(path, DateTime.Now);
+                string contents = File.ReadAllText(resolvedPath);
+                AssertContains(contents, "Information");
+                AssertContains(contents, "DTFX.SmokeTests.Program.TestSerilogFileLogging");
+                AssertContains(contents, "\"message,with comma\"");
+                AssertContains(contents, "InvalidOperationException");
+            }
+            finally
+            {
+                Directory.Delete(directory, true);
+            }
+        }
+
         private static void TestSchemasAndExamples()
         {
             string root = FindRepositoryRoot();
@@ -137,6 +167,33 @@ namespace DTFX.SmokeTests
             {
                 throw new InvalidOperationException("Expected " + expected + ", got " + actual + ".");
             }
+        }
+
+        private static void AssertContains(string value, string expected)
+        {
+            if (value == null || value.IndexOf(expected, StringComparison.Ordinal) < 0)
+            {
+                throw new InvalidOperationException("Expected value to contain '" + expected + "'.");
+            }
+        }
+
+        private sealed class TestTraceLogConfiguration : ITraceLogConfiguration
+        {
+            private readonly string _path;
+
+            public TestTraceLogConfiguration(string path)
+            {
+                _path = path;
+            }
+
+            public string TracePathTemplate { get { return _path; } }
+            public System.Diagnostics.SourceLevels TraceSourceLevels { get { return System.Diagnostics.SourceLevels.All; } }
+            public bool AutoFlush { get { return true; } }
+            public long MaxSize { get { return 1024 * 1024; } }
+            public int BufferSize { get { return 8192; } }
+            public System.Text.Encoding Encoding { get { return System.Text.Encoding.UTF8; } }
+            public bool UseGzip { get { return false; } }
+            public bool Append { get { return true; } }
         }
 
         private sealed class ResultExecutor : ExecutorBase

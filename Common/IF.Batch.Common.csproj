@@ -39,6 +39,12 @@
       <HintPath>..\packages\DotNetZip.1.15.0\lib\net40\DotNetZip.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.VisualBasic" />
+    <Reference Include="Serilog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
+      <HintPath>..\packages\Serilog.2.12.0\lib\net46\Serilog.dll</HintPath>
+    </Reference>
+    <Reference Include="Serilog.Sinks.File, Version=5.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
+      <HintPath>..\packages\Serilog.Sinks.File.5.0.0\lib\net45\Serilog.Sinks.File.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
@@ -60,6 +66,8 @@
     <Compile Include="Diagnostics\ITraceLogConfiguration.cs" />
     <Compile Include="Diagnostics\ITraceLogWriter.cs" />
     <Compile Include="Diagnostics\NullTraceLogWriter.cs" />
+    <Compile Include="Diagnostics\SerilogCsvFormatter.cs" />
+    <Compile Include="Diagnostics\SerilogTraceLogWriter.cs" />
     <Compile Include="Diagnostics\ThreadSafeTraceLogWriter.cs" />
     <Compile Include="Diagnostics\TraceEvent.cs" />
     <Compile Include="Diagnostics\TraceLog.cs" />

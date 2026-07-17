@@ -123,7 +123,7 @@ namespace IF.Batch.Common.Diagnostics
                 }
                 else
                 {
-                    CsvTraceLogWriter writer = new CsvTraceLogWriter();
+                    SerilogTraceLogWriter writer = new SerilogTraceLogWriter();
                     writer.Initialize(provider);
                     _logWriter = writer;
                 }
@@ -238,6 +238,12 @@ namespace IF.Batch.Common.Diagnostics
         /// <param name="appendMessage"></param>
         public static void WriteException(Exception ex, string appendMessage)
         {
+            SerilogTraceLogWriter serilogWriter = Instance.LogWriter as SerilogTraceLogWriter;
+            if (serilogWriter != null)
+            {
+                serilogWriter.WriteException(ex, appendMessage);
+                return;
+            }
             Instance.WriteTrace(TraceEventType.Error, CreateTraceMessage(ex, appendMessage));
             Instance.WriteTrace(TraceEventType.Error, ex);
         }
