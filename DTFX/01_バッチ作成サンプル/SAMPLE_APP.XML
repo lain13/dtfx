@@ -21,7 +21,7 @@
       <AddFile filenamePattern="${outputdirectory}\*.log" deletedOnArchived="true" />
     </ZipArchive>
     <!-- MSSQLデータ取得処理を実行する -->
-    <SqlSelect dataSource="mssql_datasource1" toFile="file_name.csv" toVariable="variable_name" toTable="local_tablename">
+    <SqlSelect dataSource="mssql_datasource1" toFile="file_name.csv.gz" toVariable="variable_name" toTable="local_tablename">
         <![CDATA[
         SELECT 'HELLOWORLD' AS COL1, 100 AS COL2, GETDATE() AS COL3 FROM MSSQL_TABLE
         ]]>
@@ -59,7 +59,7 @@
 	</SqlServerBulkInsertFromOracle>
 
 	<!-- Oracleデータ取得処理を実行する -->
-    <OracleSelect dataSource="oracle_datasource1" toFile="file_name.csv" toVariable="variable_name" toTable="local_tablename">
+    <OracleSelect dataSource="oracle_datasource1" toFile="file_name.csv.gz" toVariable="variable_name" toTable="local_tablename">
         <![CDATA[
         SELECT 'HELLOWORLD' AS COL1, 100 AS COL2, GETDATE() AS COL3 FROM ORACLE_TABLE
         ]]>
@@ -97,7 +97,7 @@
 	</OracleBulkInsertFromOracle>
 
   <!-- PostgreSqlデータ取得処理を実行する -->
-  <PostgreSqlSelect dataSource="pgsql_datasource1" toFile="file_name.csv" toVariable="variable_name" toTable="local_tablename">
+  <PostgreSqlSelect dataSource="pgsql_datasource1" toFile="file_name.csv.gz" toVariable="variable_name" toTable="local_tablename">
     <![CDATA[
         SELECT 'HELLOWORLD' AS COL1, 100 AS COL2, GETDATE() AS COL3 FROM POSTGRESQL_TABLE
         ]]>
@@ -135,7 +135,7 @@
   </PostgreSqlBulkInsertFromOracle>
 
   <!-- 一時DBデータ取得処理を実行する -->
-    <LocalDBSelect toFile="file_name.csv" toVariable="variable_name" toTable="local_new_tablename">
+    <LocalDBSelect toFile="file_name.csv.gz" toVariable="variable_name" toTable="local_new_tablename">
         <![CDATA[
         SELECT 'HELLOWORLD' AS COL1, 100 AS COL2, GETDATE() AS COL3 FROM ${local_tablename}
         ]]>

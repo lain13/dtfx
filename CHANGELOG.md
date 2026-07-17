@@ -1,31 +1,35 @@
 # Changelog
 
-이 프로젝트는 [Keep a Changelog](https://keepachangelog.com/) 형식을 따릅니다.
+このプロジェクトは [Keep a Changelog](https://keepachangelog.com/) の形式に従います。
 
 ## Unreleased
 
 ### Added
 
-- DTFX 제품명과 프로젝트 구조
-- DB 없이 실행할 수 있는 Quick Start
-- 결과 우선순위, 인수 파싱, XSD 및 예제를 검증하는 스모크 테스트
-- GitHub Actions 빌드 및 검증 워크플로
-- 기여 및 보안 정책 문서
+- DTFX の製品名とプロジェクト構成
+- データベースなしで実行できる Quick Start
+- 結果コードの優先順位、引数解析、XSD、サンプルを検証するスモークテスト
+- GitHub Actions によるビルドと検証のワークフロー
+- コントリビューションガイドとセキュリティポリシー
+- 構成ファイルおよび XML 要素のリファレンス
 - MIT License
 
 ### Changed
 
-- R7001 프로젝트 이름을 `IF.Batch.DTFX`로 변경
-- 외부 명령의 stdout/stderr를 동시에 수집하고 종료 코드를 실행 결과에 반영
-- `maxreadrows` 설정을 CSV 읽기와 파일 기반 `ForEach`에 적용
-- Git 저장소에 불필요한 Subversion/AnkhSVN 메타데이터 제거
+- R7001 から `IF.Batch.DTFX` へプロジェクト名を変更
+- 公開ドキュメントを日本語に統一し、実装に合わせて起動方法と設定の説明を更新
+- 外部コマンドの標準出力と標準エラーを並行して取得し、終了コードを実行結果へ反映
+- `maxreadrows` 設定を CSV 読み込みとファイルベースの `ForEach` に適用
+- Git リポジトリに不要な Subversion / AnkhSVN メタデータを削除
 
 ### Fixed
 
-- PostgreSQL Bulk Insert 요소의 잘못된 XSD 참조
-- 샘플 Bulk Insert의 원본/대상 데이터소스 방향
-- Error보다 Warning이 우선되던 결과 병합
-- 디렉터리 생성 실패가 숨겨지던 동작
-- PostgreSQL Executor의 잘못된 오류 요소명
-- 외부 명령 출력 버퍼로 인한 교착 가능성
-- 코드 주석과 오류 메시지의 오탈자
+- `If` の評価結果を保存する `toVariable` 属性が XSD に不足していた問題
+- GZIP を使用するサンプル出力ファイルの拡張子
+- PostgreSQL Bulk Insert 要素の誤った XSD 参照
+- サンプル Bulk Insert の転送元と転送先のデータソース方向
+- Error より Warning が優先されていた結果統合
+- ディレクトリ作成失敗が無視されていた動作
+- PostgreSQL Executor の誤ったエラー要素名
+- 外部コマンドの出力バッファによるデッドロックの可能性
+- コードコメントとエラーメッセージの誤記

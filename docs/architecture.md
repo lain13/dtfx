@@ -1,84 +1,86 @@
-# DTFX 아키텍처
+# DTFX アーキテクチャ
 
-## 개요
+## 概要
 
-DTFX는 .NET Framework 4.6.2 기반의 Windows 콘솔 ETL 엔진입니다. XML의 `<Application>` 자식 요소를 위에서 아래로 해석하며, 각 요소와 대응하는 Executor가 실제 작업을 수행합니다.
+DTFX は .NET Framework 4.6.2 上で動作する Windows 向けコンソール ETL エンジンです。XML の `<Application>` 直下にある要素を上から順に解釈し、各要素に対応する Executor が処理を実行します。
 
 ```mermaid
 flowchart LR
     CLI["Program.Main"] --> Service["DataTransferService"]
-    Service --> Config["App settings + job config"]
+    Service --> Config["実行ファイル設定 + ジョブ設定"]
     Service --> XML["Application XML"]
     XML --> App["ApplicationExecutor"]
-    App --> Tasks["Element-specific executors"]
+    App --> Tasks["要素別 Executor"]
     Tasks --> Context["DataTransferContext"]
     Context --> DB["SQL Server / Oracle / PostgreSQL"]
     Context --> Files["CSV / GZIP / ZIP"]
 ```
 
-## 솔루션 구성
+## ソリューション構成
 
-| 프로젝트 | 역할 | 출력 |
+| プロジェクト | 役割 | 出力 |
 |---|---|---|
-| `IF.Batch.Common` | 로깅, CSV, 설정, 파일 및 서비스 인터페이스 | DLL |
-| `IF.Batch.DTFX` | XML 파싱, 작업 실행, DB 및 파일 연계 | EXE |
-| `DTFX.SmokeTests` | 핵심 로직과 XSD/예제 정합성 검사 | EXE |
+| `IF.Batch.Common` | ログ、CSV、構成、ファイル操作、サービスインターフェース | DLL |
+| `IF.Batch.DTFX` | XML 解析、ジョブ実行、データベースとファイルの連携 | EXE |
+| `DTFX.SmokeTests` | コアロジック、XSD、サンプルの整合性検証 | EXE |
 
-`IF.Batch.DTFX`는 `IF.Batch.Common`만 프로젝트 참조합니다. 테스트 프로젝트는 두 프로젝트를 참조합니다.
+`IF.Batch.DTFX` は `IF.Batch.Common` をプロジェクト参照し、テストプロジェクトは両方を参照します。
 
-## 실행 흐름
+## 実行フロー
 
-1. `Program`이 `-appid`와 `-appdirectory`를 읽습니다.
-2. 기본 `app.config`, 선택적 `{appid}.config`, 명령행 인수를 AppSettings에 병합합니다.
-3. `DataTransferService`가 `{appid}.xml`을 읽고 공용 설정을 `DataTransferContext`에 구성합니다.
-4. `ApplicationExecutor`가 `<Application>`의 자식 요소를 순서대로 순회합니다.
-5. 요소 이름에 해당하는 Executor가 SQL, 파일 또는 제어 흐름 작업을 실행합니다.
-6. 최종 결과가 오류면 트랜잭션을 Rollback하고, 성공 또는 경고면 Commit합니다.
+1. `Program` が `-appid` と `-appdirectory` を解析します。
+2. 実行ファイルの `app.config`、任意の `{appid}.config`、コマンドライン引数を AppSettings にマージします。
+3. `DataTransferService` が `{appid}.xml` を読み込み、共通設定を `DataTransferContext` に反映します。
+4. `ApplicationExecutor` が `<Application>` の子要素を上から順に処理します。
+5. 要素名に対応する Executor が SQL、ファイル、または制御フローの処理を実行します。
+6. 最終結果がエラーなら未確定トランザクションをロールバックし、成功または警告ならコミットします。
 
-## Element와 Executor
+設定のマージ規則は [`configuration.md`](configuration.md) を参照してください。
 
-`Elements/`의 클래스는 XML 속성을 담는 데이터 모델이고, `Executors/`의 클래스는 실행 로직입니다. `ApplicationExecutor.CreateExecutor`가 요소 이름을 Executor로 매핑합니다.
+## Element と Executor
 
-지원 범주는 다음과 같습니다.
+`Elements/` のクラスは XML 属性を保持するデータモデル、`Executors/` のクラスは実行ロジックです。`ApplicationExecutor.CreateExecutor` が要素名を Executor にマッピングします。
 
-- SQL Server: Select, SelectScalar, Insert, Update, Delete, Bulk Insert
-- Oracle: Select, SelectScalar, Insert, Update, Delete, Bulk Insert
-- PostgreSQL: Select, SelectScalar, Insert, Update, Delete, Bulk Insert
-- LocalDB: Select, SelectScalar, Insert, Update, Delete
-- 제어 흐름: If, ForEach, AppExit
-- 파일·기타: LoadCSV, ExecuteCommand, TraceLog, ZipArchive, AddFile
+サポートする処理は次のとおりです。
 
-결과 코드는 `Error > Warning > Success` 우선순위로 병합합니다.
+- SQL Server: Select、SelectScalar、Insert、Update、Delete、Bulk Insert
+- Oracle: Select、SelectScalar、Insert、Update、Delete、Bulk Insert
+- PostgreSQL: Select、SelectScalar、Insert、Update、Delete、Bulk Insert
+- LocalDB: Select、SelectScalar、Insert、Update、Delete
+- 制御フロー: If、ForEach、AppExit
+- ファイル・その他: LoadCSV、ExecuteCommand、TraceLog、ZipArchive、AddFile
 
-## 공유 컨텍스트와 트랜잭션
+要素名と属性の詳細は [`xml-elements.md`](xml-elements.md) を参照してください。複数の処理結果は `Error > Warning > Success` の優先順位で統合されます。
 
-`DataTransferContext`는 다음 상태를 한 작업 실행 동안 공유합니다.
+## 共有コンテキストとトランザクション
 
-- DB 연결과 트랜잭션
-- `${variable}`로 참조하는 공유 변수
-- 입력·출력·백업·오류 디렉터리
-- CSV 인코딩, 구분자, 헤더, 읽기/쓰기 제한
-- LocalDB 임시 테이블
+`DataTransferContext` は、1 回のジョブ実行中に次の状態を共有します。
 
-DB 연결은 최대 3회, 2초 간격으로 시도합니다. `ForEach`는 요소의 `transaction`, `transactionOnError`, `stopOnError` 속성으로 반복 단위 트랜잭션을 제어할 수 있습니다.
+- データベース接続とトランザクション
+- `${variable}` で参照する共有変数
+- 入力、出力、バックアップ、エラーの各ディレクトリ
+- CSV のエンコーディング、区切り文字、ヘッダー、読み書き件数の制限
+- SQL Server の `tempdb` を使う LocalDB 一時テーブル
 
-## XML 스키마
+データベース接続は必要になった時点で作成され、失敗時は最大 3 回、2 秒間隔で試行します。通常のデータソースでは接続時にトランザクションも開始します。`ForEach` は `transaction`、`transactionOnError`、`stopOnError` 属性でループ後のトランザクション制御を変更できます。
 
-`DTFX/XMLSchema/Application.xsd`가 지원 요소와 속성을 정의합니다. 현재 런타임은 XML 로드와 `<Application>` 루트 확인을 수행하고 XSD를 강제하지 않습니다. 대신 스모크 테스트와 CI가 XSD 자체의 컴파일 및 제공 예제의 스키마 정합성을 검사합니다.
+## XML スキーマ
 
-이 구분은 이전 작업 정의와의 호환성을 유지하면서 새 예제가 잘못 추가되는 것을 막기 위한 것입니다. 향후 런타임 강제 검증을 도입한다면 호환성 옵션으로 제공하는 것이 안전합니다.
+`DTFX/XMLSchema/Application.xsd` が、サポートする要素と属性を定義します。現在のランタイムは XML の読み込みと `<Application>` ルートの確認のみを行い、実行時に XSD 検証を強制しません。代わりに、スモークテストと CI が XSD 自体のコンパイルと同梱サンプルのスキーマ整合性を検証します。
 
-## 의존성과 플랫폼
+この分離は既存ジョブとの互換性を維持しながら、新しいサンプルに誤りが入ることを防ぐためのものです。将来ランタイム検証を導入する場合は、既存ジョブ向けの互換性オプションを用意する必要があります。
 
-- 대상 프레임워크: .NET Framework 4.6.2
+## 依存関係とプラットフォーム
+
+- 対象フレームワーク: .NET Framework 4.6.2
 - SQL Server: `System.Data.SqlClient`
 - Oracle: `Oracle.ManagedDataAccess` 19.18
 - PostgreSQL: `Npgsql` 4.1.12
 - ZIP: DotNetZip 1.15.0
-- 패키지 관리: `packages.config`
+- パッケージ管理: `packages.config`
 
-오래된 런타임과 데이터 공급자는 호환성 기준선입니다. 새 메이저 버전으로 이동할 때는 실제 DB 통합 테스트와 함께 별도 변경으로 진행해야 합니다.
+古いランタイムとデータプロバイダーは、既存環境との互換性を保つための基準です。メジャーバージョンを更新する場合は、実データベースを使った統合テストを伴う独立した変更として扱ってください。
 
-## 보안 경계
+## セキュリティ境界
 
-작업 XML은 데이터베이스 SQL과 Windows 명령을 실행할 수 있는 코드에 준하는 입력입니다. 신뢰하지 않는 사용자가 XML, 작업별 config 또는 공유 변수를 수정할 수 없도록 운영해야 합니다. 연결 문자열과 실제 자격 증명은 저장소에 커밋하지 않습니다.
+ジョブ XML は、データベース上の SQL と Windows コマンドを実行できるため、コードに相当する入力です。信頼できない利用者が XML、ジョブ固有の config、共有変数を変更できないように運用してください。実際の接続文字列や認証情報はリポジトリへコミットしないでください。

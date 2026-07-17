@@ -2,104 +2,129 @@
 
 **Data Transfer Framework for XML**
 
-DTFX는 XML에 정의한 작업을 순서대로 실행하여 SQL Server, Oracle, PostgreSQL 사이의 데이터 연계와 파일 처리를 자동화하는 Windows 콘솔 ETL 엔진입니다. 기존 프로젝트명은 R7001이었으며, 공개 프로젝트 이름을 DTFX로 변경했습니다.
+DTFX は、XML に定義した処理を上から順に実行し、SQL Server、Oracle、PostgreSQL 間のデータ連携とファイル処理を自動化する Windows 向けコンソール ETL エンジンです。旧プロジェクト名は R7001 で、公開にあわせて DTFX に改称しました。
 
-## 주요 기능
+## 主な機能
 
-- SQL Server, Oracle, PostgreSQL의 Select/Insert/Update/Delete
-- DB 간 Bulk Insert
-- CSV 및 GZIP 읽기·쓰기
-- 로컬 임시 테이블
-- `If`, `ForEach`, `AppExit` 제어 흐름
-- 외부 명령 실행, 로그 기록, ZIP 생성
-- `${variable}` 형식의 공유 변수 치환
+- SQL Server、Oracle、PostgreSQL の Select / Insert / Update / Delete
+- データベース間の Bulk Insert
+- CSV および GZIP の読み書き
+- SQL Server の `tempdb` を利用する一時テーブル
+- `If`、`ForEach`、`AppExit` による制御フロー
+- 外部コマンドの実行、ログ出力、ZIP 作成
+- `${variable}` 形式の共有変数展開
 
-## 요구 사항
+## 動作要件
 
 - Windows
-- .NET Framework 4.6.2 Developer/Targeting Pack
-- Visual Studio 또는 Build Tools for Visual Studio의 MSBuild
+- .NET Framework 4.6.2 Developer Pack または Targeting Pack
+- Visual Studio、または Build Tools for Visual Studio に含まれる MSBuild
 - NuGet CLI
 
-실제 DB 작업에는 해당 데이터베이스와 접속 정보가 필요합니다. PostgreSQL과 Oracle 드라이버를 포함한 의존성은 `packages.config`로 관리합니다.
+実際のデータベース処理には、対象データベースと接続情報が必要です。Oracle および PostgreSQL のドライバーを含む依存関係は `packages.config` で管理しています。
 
-## 빌드
+## ビルド
 
 ```bat
 NuGet.exe restore IF.Batch.sln
 MSBuild.exe IF.Batch.sln /p:Configuration=Release /p:Platform="Any CPU"
 ```
 
-의존성이 이미 복원된 환경에서는 다음 명령도 사용할 수 있습니다.
+依存関係を復元済みであれば、次のコマンドでもビルドできます。
 
 ```bat
-dotnet build IF.Batch.sln --no-restore -c Release
+dotnet build IF.Batch.sln --no-restore -c Release -p:Platform="Any CPU"
 ```
 
-빌드 결과는 `DTFX\bin\Release\IF.Batch.DTFX.exe`에 생성됩니다.
+実行ファイルは `DTFX\bin\Release\IF.Batch.DTFX.exe` に生成されます。
 
-## 1분 Quick Start
+## 1 分で試す
 
-Quick Start는 DB 연결 없이 표현식, 로그, 정상 종료 흐름을 확인합니다.
+Quick Start では、データベース接続を使わずに式の評価、ログ出力、正常終了までの流れを確認できます。リポジトリのルートで次を実行してください。
 
 ```bat
 examples\quickstart\QUICKSTART.BAT
 ```
 
-또는 직접 실행할 수 있습니다.
+実行ファイルを直接起動する場合は次のとおりです。
 
 ```bat
 DTFX\bin\Release\IF.Batch.DTFX.exe -appid QUICKSTART -appdirectory examples\quickstart
 ```
 
-일반적인 실행 형식은 다음과 같습니다.
+一般的な起動形式は次のとおりです。
 
 ```bat
 IF.Batch.DTFX.exe -appid <APPID> [-appdirectory <DIRECTORY>]
 ```
 
-- `appid`: 확장자를 제외한 XML 정의 파일명
-- `appdirectory`: XML과 선택적 `{appid}.config`가 있는 디렉터리. 생략하면 실행 파일 디렉터리를 사용합니다.
-- 종료 코드: `0` 성공, `1` 오류, `2` 경고
+| 引数 | 説明 |
+|---|---|
+| `appid` | 必須。拡張子を除いたジョブ定義 XML のファイル名 |
+| `appdirectory` | `{appid}.xml` と任意の `{appid}.config` を置くディレクトリ |
 
-## XML 예제
+`appdirectory` を省略すると、まず実行ファイルの構成ファイルにある `appdirectory` が使われます。このリポジトリの既定値は `.\` です。設定も空の場合に限り、実行ファイルのディレクトリへフォールバックします。相対パスはプロセスのカレントディレクトリを基準に解決されるため、運用時は `-appdirectory` を明示することを推奨します。
+
+終了コードは `0` が成功、`1` がエラー、`2` が警告です。`-?` または `-help` を指定した場合と、`-appid` を省略した場合はヘルプを表示して `0` で終了します。
+
+## ジョブ設定
+
+ジョブごとに、同じベース名の XML と任意の config を用意します。
+
+```text
+MY_JOB.xml
+MY_JOB.config
+```
+
+`MY_JOB.config` には接続文字列、入出力ディレクトリ、CSV 形式、ログなどを指定できます。コマンドラインの値はジョブ config より優先され、ジョブ config は実行ファイルの config より優先されます。詳細と安全な設定例は [`docs/configuration.md`](docs/configuration.md) を参照してください。
+
+## XML の例
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
 <Application xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
              xsi:noNamespaceSchemaLocation="../../DTFX/XMLSchema/Application.xsd">
   <TraceLog eventType="information">Job started.</TraceLog>
-  <SqlSelect dataSource="source" toFile="users.csv">
+  <SqlSelect dataSource="source" toFile="users.csv.gz"><![CDATA[
     SELECT * FROM USERS
-  </SqlSelect>
+  ]]></SqlSelect>
   <AppExit result="0">Job completed.</AppExit>
 </Application>
 ```
 
-전체 요소 예시는 [`SAMPLE_APP.XML`](DTFX/01_%E3%83%90%E3%83%83%E3%83%81%E4%BD%9C%E6%88%90%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB/SAMPLE_APP.XML), 스키마는 [`Application.xsd`](DTFX/XMLSchema/Application.xsd)를 참고하세요. 전체 샘플의 DB 연결 문자열과 SQL은 실행 환경에 맞게 변경해야 합니다.
+利用できる要素と属性は [`docs/xml-elements.md`](docs/xml-elements.md) にまとめています。完全な要素例は [`SAMPLE_APP.XML`](DTFX/01_%E3%83%90%E3%83%83%E3%83%81%E4%BD%9C%E6%88%90%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB/SAMPLE_APP.XML)、検証用スキーマは [`Application.xsd`](DTFX/XMLSchema/Application.xsd) を参照してください。完全版サンプルの接続文字列と SQL は、実行環境に合わせて変更する必要があります。
 
-> XML 정의는 실행 권한을 가진 신뢰할 수 있는 사용자만 작성해야 합니다. `ExecuteCommand`는 Windows 명령을 실행하며 SQL 요소는 지정된 데이터베이스 권한으로 SQL을 수행합니다.
+> ジョブ XML はコードと同じ信頼境界で管理してください。`ExecuteCommand` は Windows コマンドを実行し、SQL 要素は指定したデータベース権限で任意の SQL を実行します。
 
-## 테스트
+## テスト
+
+Release ビルド後に次を実行します。
 
 ```bat
 tests\DTFX.SmokeTests\bin\Release\DTFX.SmokeTests.exe
 ```
 
-스모크 테스트는 결과 코드 우선순위, 명령행 인수 파싱, XSD 컴파일, Quick Start 및 전체 샘플의 스키마 정합성을 검사합니다.
+スモークテストは、結果コードの優先順位、コマンドライン引数の解析、XSD のコンパイル、および Quick Start と完全版サンプルのスキーマ整合性を検証します。実データベースへの接続テストは含みません。
 
-## 프로젝트 구조
+## プロジェクト構成
 
 ```text
-Common/                  공용 로깅, CSV, 설정, 파일 유틸리티
-DTFX/                    ETL 엔진과 XML 요소/Executor
-docs/                    설계 문서
-examples/quickstart/     DB 없는 실행 예제
-tests/DTFX.SmokeTests/   외부 테스트 패키지가 필요 없는 스모크 테스트
+Common/                  ログ、CSV、構成、ファイル操作の共通機能
+DTFX/                    ETL エンジン、XML 要素、Executor
+docs/                    利用方法と設計資料
+examples/quickstart/     データベース不要の実行例
+tests/DTFX.SmokeTests/   外部テストパッケージ不要のスモークテスト
 ```
 
-설계는 [`docs/architecture.md`](docs/architecture.md), 기여 방법은 [`CONTRIBUTING.md`](CONTRIBUTING.md), 보안 정책은 [`SECURITY.md`](SECURITY.md), 변경 내용은 [`CHANGELOG.md`](CHANGELOG.md)를 참고하세요.
+## ドキュメント
 
-## 라이선스
+- [構成ファイルと設定](docs/configuration.md)
+- [XML 要素リファレンス](docs/xml-elements.md)
+- [アーキテクチャ](docs/architecture.md)
+- [コントリビューションガイド](CONTRIBUTING.md)
+- [セキュリティポリシー](SECURITY.md)
+- [変更履歴](CHANGELOG.md)
 
-DTFX는 [MIT License](LICENSE)로 공개됩니다.
+## ライセンス
+
+DTFX is released under the [MIT License](LICENSE).

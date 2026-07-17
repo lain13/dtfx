@@ -586,6 +586,8 @@
       </xs:choice>
       <!-- JScript 表現式 -->
       <xs:attribute name="test" type="xs:string" use="required" />
+      <!-- 評価結果を保存する変数名 -->
+      <xs:attribute name="toVariable" type="xs:string" use="optional" />
     </xs:complexType>
   </xs:element>
 
