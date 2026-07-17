@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Xml;
@@ -17,6 +18,9 @@ namespace DTFX.SmokeTests
             var failures = new List<string>();
             Run("result priority", TestResultPriority, failures);
             Run("argument parsing", TestArgumentParsing, failures);
+            Run("argument parsing edge cases", TestArgumentParsingEdgeCases, failures);
+            Run("CSV formatting", TestCsvFormatting, failures);
+            Run("CSV enumerable is read once", TestCsvEnumerableIsReadOnce, failures);
             Run("XSD and examples", TestSchemasAndExamples, failures);
 
             if (failures.Count == 0)
@@ -58,6 +62,38 @@ namespace DTFX.SmokeTests
             var arguments = new InputArguments(new[] { "-appid", "QUICKSTART", "-appdirectory", "." });
             AssertEqual("QUICKSTART", arguments["appid"]);
             AssertEqual(".", arguments["appdirectory"]);
+        }
+
+        private static void TestArgumentParsingEdgeCases()
+        {
+            var arguments = new InputArguments(new[] { "-APPID", "first", "-appid", "last", "-dry-run", null });
+
+            AssertEqual("last", arguments["appid"]);
+            AssertEqual("last", arguments["-APPID"]);
+            AssertEqual(true, arguments.Contains("dry-run"));
+            AssertEqual<string>(null, arguments["dry-run"]);
+        }
+
+        private static void TestCsvFormatting()
+        {
+            var defaultFormatter = new CsvFormatter();
+            AssertEqual("plain,\"with,comma\",\"quoted \"\"value\"\"\",\" line \"",
+                defaultFormatter.ToCsv(new[] { "plain", "with,comma", "quoted \"value\"", " line " }).ToString());
+
+            var semicolonFormatter = new CsvFormatter(";");
+            AssertEqual("\"with;semicolon\";with,comma",
+                semicolonFormatter.ToCsv(new[] { "with;semicolon", "with,comma" }).ToString());
+
+            var trimmingFormatter = new CsvFormatter(trimWhiteSpace: true);
+            AssertEqual("value,", trimmingFormatter.ToCsv(new[] { " value ", null }).ToString());
+        }
+
+        private static void TestCsvEnumerableIsReadOnce()
+        {
+            var formatter = new CsvFormatter();
+            var fields = new SingleUseEnumerable(new object[] { "first", 2, null });
+
+            AssertEqual("first,2,", formatter.ToCsv(fields).ToString());
         }
 
         private static void TestSchemasAndExamples()
@@ -113,6 +149,33 @@ namespace DTFX.SmokeTests
             public override ResultTypeCode Execute(XElement parameter)
             {
                 return ResultTypeCode.Success;
+            }
+        }
+
+        private sealed class SingleUseEnumerable : IEnumerable<object>
+        {
+            private readonly IEnumerable<object> _values;
+            private bool _wasEnumerated;
+
+            public SingleUseEnumerable(IEnumerable<object> values)
+            {
+                _values = values;
+            }
+
+            public IEnumerator<object> GetEnumerator()
+            {
+                if (_wasEnumerated)
+                {
+                    throw new InvalidOperationException("The sequence was enumerated more than once.");
+                }
+
+                _wasEnumerated = true;
+                return _values.GetEnumerator();
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return GetEnumerator();
             }
         }
     }

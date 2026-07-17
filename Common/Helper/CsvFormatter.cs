@@ -108,17 +108,16 @@ namespace IF.Batch.Common.Helper
         public StringBuilder ToCsv(IEnumerable<object> fields)
         {
             StringBuilder builder = new StringBuilder();
-            int lastColIndex = fields.Count() - 1;
-            int i = 0;
+            bool isFirstField = true;
             foreach (object field in fields)
             {
-                WriteField(builder, field == null ? null : field.ToString());
-                // カンマを書き込む
-                if (lastColIndex > i)
+                if (!isFirstField)
                 {
                     builder.Append(Delimiter);
                 }
-                i++;
+
+                WriteField(builder, field == null ? null : field.ToString());
+                isFirstField = false;
             }
             return builder;
         }
@@ -132,29 +131,30 @@ namespace IF.Batch.Common.Helper
             string str = field != null ? TrimWhiteSpace ? field.Trim() : field : string.Empty;
 
             // 「"」で囲む必要があるか調べる
-            if (AlwaysFieldsEncloseInQuotes ||
-                str.IndexOf('"') > -1 ||
-                str.IndexOf(',') > -1 ||
-                str.IndexOf('\r') > -1 ||
-                str.IndexOf('\n') > -1 ||
-                str.StartsWith(" ") ||
-                str.StartsWith("\t") ||
-                str.EndsWith(" ") ||
-                str.EndsWith("\t"))
+            if (RequiresQuotes(str))
             {
-                if (str.IndexOf('"') > -1)
-                {
-                    // 「"」を「""」とする
-                    str = "\"" + str.Replace("\"", "\"\"") + "\"";
-                }
-                else
-                {
-                    str = "\"" + str + "\"";
-                }
+                // 「"」を「""」とする
+                str = "\"" + str.Replace("\"", "\"\"") + "\"";
             }
 
             // フィールドを書き込む
             builder.Append(str);
+        }
+
+        /// <summary>
+        /// フィールドを引用符で囲む必要があるかを返します。
+        /// </summary>
+        protected virtual bool RequiresQuotes(string field)
+        {
+            return AlwaysFieldsEncloseInQuotes ||
+                field.IndexOf('"') > -1 ||
+                (!string.IsNullOrEmpty(Delimiter) && field.Contains(Delimiter)) ||
+                field.IndexOf('\r') > -1 ||
+                field.IndexOf('\n') > -1 ||
+                field.StartsWith(" ") ||
+                field.StartsWith("\t") ||
+                field.EndsWith(" ") ||
+                field.EndsWith("\t");
         }
     }
 }

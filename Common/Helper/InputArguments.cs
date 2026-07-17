@@ -79,7 +79,7 @@ namespace IF.Batch.Common.Helper
 
         public virtual bool IsKey(string str)
         {
-            return str.StartsWith(_keyLeadingPattern);
+            return !string.IsNullOrEmpty(str) && str.StartsWith(_keyLeadingPattern);
         }
 
         public virtual Dictionary<string, string> GetPeeledArguments()
