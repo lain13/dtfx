@@ -36,7 +36,7 @@ namespace IF.Batch.DTFX.Service
         public bool TryCreate(out DataTransferContext context)
         {
             MethodBase method = MethodInfo.GetCurrentMethod();
-            context = new DataTransferContext();
+            context = new DataTransferContext(_logger);
 
             try
             {

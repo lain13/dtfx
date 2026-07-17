@@ -27,6 +27,8 @@ namespace IF.Batch.DTFX.Helper
     /// </summary>
     public class LocalDBHelper
     {
+        private readonly ITraceLogger _logger;
+
         /// <summary>
         /// 一時DBのデータソース
         /// </summary>
@@ -61,9 +63,20 @@ namespace IF.Batch.DTFX.Helper
         private readonly SynchronizedCollection<string> _logicalTableNames = new SynchronizedCollection<string>();
 
         public LocalDBHelper(SqlConnection connection, int timeout)
+            : this(connection, timeout, new TraceLogger())
         {
+        }
+
+        public LocalDBHelper(SqlConnection connection, int timeout, ITraceLogger logger)
+        {
+            if (logger == null)
+            {
+                throw new ArgumentNullException("logger");
+            }
+
             this.Connection = connection;
             this.SqlCommandTimeout = timeout;
+            _logger = logger;
         }
 
         /// <summary>
@@ -87,7 +100,7 @@ namespace IF.Batch.DTFX.Helper
 
             string physicalTableName = GetLocalDBPhysicalTableName(tableName);
             string tableddl = MSSQLTableCreator.GetCreateTableStatement(reader, physicalTableName);
-            TraceLog.WriteDebug(method, tableddl);
+            _logger.WriteDebug(method, tableddl);
 
             using (var command = new SqlCommand(tableddl))
             {
@@ -109,7 +122,7 @@ namespace IF.Batch.DTFX.Helper
 
             string physicalTableName = GetLocalDBPhysicalTableName(tableName);
             string tableddl = MSSQLTableCreator.GetCreateTableStatement(columns, physicalTableName);
-            TraceLog.WriteDebug(method, tableddl);
+            _logger.WriteDebug(method, tableddl);
 
             using (var command = new SqlCommand(tableddl))
             {

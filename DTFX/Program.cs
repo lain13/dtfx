@@ -36,6 +36,7 @@ namespace IF.Batch.DTFX
             }
 
             MergeAppSettings(arguments);
+            ITraceLogger logger = new TraceLogger();
 
             // アプリケーションIDとアプリケーション名を取得する
             string appid = ConfigurationManager.AppSettings["appid"];
@@ -45,24 +46,24 @@ namespace IF.Batch.DTFX
                 appname = string.Format("{0}({1})", appid, appname);
             }
 
-            TraceLog.WriteInfo(method, appname + "を開始します。");
+            logger.WriteInfo(method, appname + "を開始します。");
 
             ResultTypeCode result = ResultTypeCode.Success;
             try
             {
                 // データ連携サービス生成
-                using (DataTransferService service = new DataTransferService())
+                using (DataTransferService service = new DataTransferService(logger))
                 {
                     // 環境設定の検証
                     if (!service.EnsureServiceConfigurations())
                     {
-                        TraceLog.WriteError(method, "環境設定が正しくありません。");
+                        logger.WriteError(method, "環境設定が正しくありません。");
                         result = ResultTypeCode.Error;
                     }
                     // 初期化の検証
                     else if (!service.InitService())
                     {
-                        TraceLog.WriteError(method, "初期化に失敗しました。");
+                        logger.WriteError(method, "初期化に失敗しました。");
                         result = ResultTypeCode.Error;
                     }
                     else
@@ -75,20 +76,20 @@ namespace IF.Batch.DTFX
             }
             catch (Exception ex)
             {
-                TraceLog.WriteError(method, "アプリケーション実行中予期せぬエラーが発生しました。");
-                TraceLog.WriteException(ex);
+                logger.WriteError(method, "アプリケーション実行中予期せぬエラーが発生しました。");
+                logger.WriteException(ex);
                 result = ResultTypeCode.Error;
             }
             switch (result)
             {
                 case ResultTypeCode.Success:
-                    TraceLog.WriteInfo(method, appname + "を正常終了しました。");
+                    logger.WriteInfo(method, appname + "を正常終了しました。");
                     break;
                 case ResultTypeCode.Error:
-                    TraceLog.WriteInfo(method, appname + "を異常終了しました。");
+                    logger.WriteInfo(method, appname + "を異常終了しました。");
                     break;
                 case ResultTypeCode.Warning:
-                    TraceLog.WriteInfo(method, appname + "を警告終了しました。");
+                    logger.WriteInfo(method, appname + "を警告終了しました。");
                     break;
             }
 

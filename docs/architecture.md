@@ -60,6 +60,8 @@ flowchart LR
 
 `DataTransferService` は既定コンストラクタで標準構成を組み立て、構成確認・初期化・実行・破棄のライフサイクルだけを調整します。AppSettings、接続文字列、ジョブ XML、ファイル関連オプションの読み込みは `IDataTransferContextFactory` の標準実装へ分離されています。サービスは `IDataTransferContextFactory`、`IExecutorFactory`、`ITraceLogger` を受け取るコンストラクタも公開しており、テストや将来の DI コンテナから実行時依存関係を渡せます。
 
+`Program` は標準の `TraceLogger` を一度だけ生成し、`DataTransferService(ITraceLogger)` へ渡すコンポジションルートです。同じロガーは `DataTransferContextFactory`、`DataTransferContext`、`LocalDBHelper`、`ExecutorFactory` と各 Executor まで引き継がれます。
+
 ## 共有コンテキストとトランザクション
 
 `DataTransferContext` は、1 回のジョブ実行中に次の状態を共有します。

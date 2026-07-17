@@ -33,6 +33,7 @@ namespace DTFX.SmokeTests
             Run("data transfer service injection", TestDataTransferServiceInjection, failures);
             Run("trace logger injection", TestTraceLoggerInjection, failures);
             Run("executor logger propagation", TestExecutorLoggerPropagation, failures);
+            Run("data transfer context logger injection", TestDataTransferContextLoggerInjection, failures);
             Run("Serilog file logging", TestSerilogFileLogging, failures);
             Run("XSD and examples", TestSchemasAndExamples, failures);
 
@@ -265,6 +266,21 @@ namespace DTFX.SmokeTests
             }
         }
 
+        private static void TestDataTransferContextLoggerInjection()
+        {
+            var logger = new RecordingTraceLogger();
+
+            using (var context = new DataTransferContext(logger))
+            {
+                context.CommitAllTransactions();
+                context.RollbackAllTransactions();
+            }
+
+            AssertEqual(2, logger.Debugs.Count);
+            AssertContains(logger.Debugs[0], "コミット");
+            AssertContains(logger.Debugs[1], "ロールバック");
+        }
+
         private static void AssertEvaluationFails(ExpressionEvaluator evaluator, string expression)
         {
             try
@@ -482,11 +498,14 @@ namespace DTFX.SmokeTests
             public RecordingTraceLogger()
             {
                 Infos = new List<string>();
+                Debugs = new List<string>();
                 Errors = new List<string>();
                 Exceptions = new List<Exception>();
             }
 
             public IList<string> Infos { get; private set; }
+
+            public IList<string> Debugs { get; private set; }
 
             public IList<string> Errors { get; private set; }
 
@@ -508,6 +527,7 @@ namespace DTFX.SmokeTests
 
             public void WriteDebug(System.Reflection.MethodBase method, string message, params object[] args)
             {
+                Debugs.Add(FormatMessage(message, args));
             }
 
             public void WriteException(Exception exception, string appendMessage = null)

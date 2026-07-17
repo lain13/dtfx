@@ -159,6 +159,7 @@ namespace IF.Batch.DTFX.Service
         private readonly ConcurrentDictionary<string, ConnectionStringSettings> _connectionStrings = new ConcurrentDictionary<string, ConnectionStringSettings>();
         private readonly ConcurrentDictionary<string, DbConnection> _dataSources = new ConcurrentDictionary<string, DbConnection>();
         private readonly ConcurrentDictionary<string, DbTransaction> _transactions = new ConcurrentDictionary<string, DbTransaction>();
+        private readonly ITraceLogger _logger;
         private LocalDBHelper _localDB = null;
 
         /// <summary>
@@ -167,7 +168,18 @@ namespace IF.Batch.DTFX.Service
         private const string __TEMPDB__ = "__TEMPDB__";
 
         public DataTransferContext()
+            : this(new TraceLogger())
         {
+        }
+
+        public DataTransferContext(ITraceLogger logger)
+        {
+            if (logger == null)
+            {
+                throw new ArgumentNullException("logger");
+            }
+
+            _logger = logger;
         }
 
         public void AddConnectionStringSettings(ConnectionStringSettings settings)
@@ -183,7 +195,10 @@ namespace IF.Batch.DTFX.Service
         {
             if (_localDB == null)
             {
-                _localDB = new LocalDBHelper(GetConnection<SqlConnection>(__TEMPDB__), SqlCommandTimeout);
+                _localDB = new LocalDBHelper(
+                    GetConnection<SqlConnection>(__TEMPDB__),
+                    SqlCommandTimeout,
+                    _logger);
             }
             return _localDB;
         }
@@ -285,7 +300,7 @@ namespace IF.Batch.DTFX.Service
         private DbConnection CreateDataSource(ConnectionStringSettings settings)
         {
             MethodBase method = MethodInfo.GetCurrentMethod();
-            TraceLog.WriteInfo(method, "データベースに接続します。データソース名:{0}, プロバイダ名:{1}", settings.Name, settings.ProviderName);
+            _logger.WriteInfo(method, "データベースに接続します。データソース名:{0}, プロバイダ名:{1}", settings.Name, settings.ProviderName);
             switch (settings.ProviderName)
             {
                 case "System.Data.SqlClient":
@@ -338,7 +353,7 @@ namespace IF.Batch.DTFX.Service
                     if (i < 2)
                     {
                         // 2秒待機
-                        TraceLog.WriteWarning(method, "データベース接続に失敗しました。データソース名:{0}, プロバイダ名:{1}, 接続回数:{2}", settings.Name, settings.ProviderName, i);
+                        _logger.WriteWarning(method, "データベース接続に失敗しました。データソース名:{0}, プロバイダ名:{1}, 接続回数:{2}", settings.Name, settings.ProviderName, i);
                         System.Threading.Thread.Sleep(2000);
                         continue;
                     }
@@ -376,7 +391,7 @@ namespace IF.Batch.DTFX.Service
                     if (i < 2)
                     {
                         // 2秒待機
-                        TraceLog.WriteWarning(method, "データベース接続に失敗しました。データソース名:{0}, プロバイダ名:{1}, 接続回数:{2}", settings.Name, settings.ProviderName, i);
+                        _logger.WriteWarning(method, "データベース接続に失敗しました。データソース名:{0}, プロバイダ名:{1}, 接続回数:{2}", settings.Name, settings.ProviderName, i);
                         System.Threading.Thread.Sleep(2000);
                         continue;
                     }
@@ -412,7 +427,7 @@ namespace IF.Batch.DTFX.Service
                     if (i < 2)
                     {
                         // 2秒待機
-                        TraceLog.WriteWarning(method, "データベース接続に失敗しました。データソース名:{0}, プロバイダ名:{1}, 接続回数:{2}", settings.Name, settings.ProviderName, i);
+                        _logger.WriteWarning(method, "データベース接続に失敗しました。データソース名:{0}, プロバイダ名:{1}, 接続回数:{2}", settings.Name, settings.ProviderName, i);
                         System.Threading.Thread.Sleep(2000);
                         continue;
                     }
@@ -436,7 +451,7 @@ namespace IF.Batch.DTFX.Service
             {
                 CommitTransaction(key);
             }
-            TraceLog.WriteDebug(method, "コミットしました。");
+            _logger.WriteDebug(method, "コミットしました。");
         }
 
         /// <summary>
@@ -450,7 +465,7 @@ namespace IF.Batch.DTFX.Service
             {
                 RollbackTransaction(key);
             }
-            TraceLog.WriteDebug(method, "ロールバックしました。");
+            _logger.WriteDebug(method, "ロールバックしました。");
         }
 
         /// <summary>
@@ -493,7 +508,7 @@ namespace IF.Batch.DTFX.Service
                 _dataSources.TryRemove(key, out dataSource);
                 if (dataSource != null)
                 {
-                    TraceLog.WriteInfo(method, "データベース接続を解除します。データソース名:{0}", key);
+                    _logger.WriteInfo(method, "データベース接続を解除します。データソース名:{0}", key);
                     dataSource.Dispose();
                 }
             }

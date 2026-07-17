@@ -27,7 +27,7 @@ namespace IF.Batch.DTFX.Service
         {
         }
 
-        private DataTransferService(ITraceLogger logger)
+        public DataTransferService(ITraceLogger logger)
             : this(new DataTransferContextFactory(logger), new ExecutorFactory(logger), logger)
         {
         }
