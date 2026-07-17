@@ -19,7 +19,7 @@ namespace IF.Batch.DTFX.Elements
     public class IfElement : XmlElementBase
     {
         /// <summary>
-        /// 条件文(Jscript形式)
+        /// 条件文(JEXL形式)
         /// </summary>
         public string Test { get; set; }
 

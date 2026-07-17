@@ -29,11 +29,11 @@ namespace IF.Batch.DTFX.Executors
     /// </summary>
     public class IfExecutor : ExecutorBase
     {
-        // Jscript解析
-        private readonly JScriptEvaluator _evaluator = new JScriptEvaluator();
+        // JEXL式を解析する
+        private readonly ExpressionEvaluator _evaluator = new ExpressionEvaluator();
 
         /// <summary>
-        /// 条件式をJScriptで評価し、結果が'true'の場合に下位 XML要素を実行します。
+        /// 条件式をJEXLで評価し、結果が'true'の場合に下位 XML要素を実行します。
         /// 評価結果をtoVariableで指定された共有変数に保存することも可能です。
         /// </summary>
         public override ResultTypeCode Execute(XElement rawElement)

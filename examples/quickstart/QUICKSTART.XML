@@ -2,8 +2,9 @@
 <Application xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
              xsi:noNamespaceSchemaLocation="../../DTFX/XMLSchema/Application.xsd">
   <TraceLog eventType="information">DTFX Quick Start started.</TraceLog>
-  <If test="1 + 1 == 2" toVariable="expression_result">
-    <TraceLog eventType="information">Expression evaluation works: ${expression_result}.</TraceLog>
+  <!-- JEXL式。XML属性内の論理ANDは &amp;&amp; と記述します。 -->
+  <If test="2 * 3 == 6 &amp;&amp; !false" toVariable="expression_result">
+    <TraceLog eventType="information">JEXL expression evaluation works: ${expression_result}.</TraceLog>
   </If>
   <AppExit result="0">DTFX Quick Start completed.</AppExit>
 </Application>

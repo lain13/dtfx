@@ -162,9 +162,9 @@
         ]]>
     </LocalDBDelete>
 
-    <!-- 条件文処理を実行する ※&&は&amp;&amp;に変更して入力する -->
-    <If test="'${local_variable1}' == 'HELLOWORLD' &amp;&amp; ('${local_variable2}' != 'HELLOWORLD')">
-        <!-- この部分に他のタグを入れることができます。-->
+    <!-- JEXL条件式を評価する。XML属性内の論理ANDは &amp;&amp; と記述する -->
+    <If test="'${local_variable1}' == 'HELLOWORLD' &amp;&amp; '${local_variable2}' != 'HELLOWORLD'" toVariable="is_hello_world">
+        <TraceLog eventType="information">JEXL condition matched: ${is_hello_world}</TraceLog>
 	</If>
 
     <!-- ループ処理を実行する -->

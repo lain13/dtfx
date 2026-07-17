@@ -9,6 +9,7 @@ using IF.Batch.Common.Configuration;
 using IF.Batch.Common.Diagnostics;
 using IF.Batch.Common.Helper;
 using IF.Batch.DTFX.Executors;
+using IF.Batch.DTFX.Helper;
 
 namespace DTFX.SmokeTests
 {
@@ -22,6 +23,7 @@ namespace DTFX.SmokeTests
             Run("argument parsing edge cases", TestArgumentParsingEdgeCases, failures);
             Run("CSV formatting", TestCsvFormatting, failures);
             Run("CSV enumerable is read once", TestCsvEnumerableIsReadOnce, failures);
+            Run("expression evaluation", TestExpressionEvaluation, failures);
             Run("Serilog file logging", TestSerilogFileLogging, failures);
             Run("XSD and examples", TestSchemasAndExamples, failures);
 
@@ -96,6 +98,32 @@ namespace DTFX.SmokeTests
             var fields = new SingleUseEnumerable(new object[] { "first", 2, null });
 
             AssertEqual("first,2,", formatter.ToCsv(fields).ToString());
+        }
+
+        private static void TestExpressionEvaluation()
+        {
+            var evaluator = new ExpressionEvaluator();
+
+            AssertEqual("true", evaluator.Evaluate("1 + 1 == 2"));
+            AssertEqual("true", evaluator.Evaluate("'HELLOWORLD' == 'HELLOWORLD' && ('OTHER' != 'HELLOWORLD')"));
+            AssertEqual("false", evaluator.Evaluate("10 < 2 || false"));
+            AssertEqual("7", evaluator.Evaluate("1 + 2 * 3"));
+            AssertEqual("fallback", evaluator.Evaluate("false ? 'selected' : 'fallback'"));
+            AssertEvaluationFails(evaluator, "new ActiveXObject('WScript.Shell')");
+        }
+
+        private static void AssertEvaluationFails(ExpressionEvaluator evaluator, string expression)
+        {
+            try
+            {
+                evaluator.Evaluate(expression);
+            }
+            catch (Exception)
+            {
+                return;
+            }
+
+            throw new InvalidOperationException("Expected expression to be rejected: " + expression);
         }
 
         private static void TestSerilogFileLogging()
