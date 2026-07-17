@@ -65,12 +65,14 @@
     <Compile Include="Diagnostics\CsvTraceLogWriter.cs" />
     <Compile Include="Diagnostics\ITraceEventConfiguration.cs" />
     <Compile Include="Diagnostics\ITraceLogConfiguration.cs" />
+    <Compile Include="Diagnostics\ITraceLogger.cs" />
     <Compile Include="Diagnostics\ITraceLogWriter.cs" />
     <Compile Include="Diagnostics\NullTraceLogWriter.cs" />
     <Compile Include="Diagnostics\SerilogCsvFormatter.cs" />
     <Compile Include="Diagnostics\SerilogTraceLogWriter.cs" />
     <Compile Include="Diagnostics\ThreadSafeTraceLogWriter.cs" />
     <Compile Include="Diagnostics\TraceEvent.cs" />
+    <Compile Include="Diagnostics\TraceLogger.cs" />
     <Compile Include="Diagnostics\TraceLog.cs" />
     <Compile Include="Helper\ConcurrentCsvWriter.cs" />
     <Compile Include="Helper\ConfigurationManagerHelper.cs" />

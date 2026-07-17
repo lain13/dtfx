@@ -56,7 +56,7 @@ flowchart LR
 
 要素名と属性の詳細は [`xml-elements.md`](xml-elements.md) を参照してください。複数の処理結果は `Error > Warning > Success` の優先順位で統合されます。
 
-`DataTransferService` は既定コンストラクタで標準構成を組み立て、構成確認・初期化・実行・破棄のライフサイクルだけを調整します。AppSettings、接続文字列、ジョブ XML、ファイル関連オプションの読み込みは `IDataTransferContextFactory` の標準実装へ分離されています。サービスは `IDataTransferContextFactory` と `IExecutorFactory` を受け取るコンストラクタも公開しており、テストや将来の DI コンテナから実行時依存関係を渡せます。
+`DataTransferService` は既定コンストラクタで標準構成を組み立て、構成確認・初期化・実行・破棄のライフサイクルだけを調整します。AppSettings、接続文字列、ジョブ XML、ファイル関連オプションの読み込みは `IDataTransferContextFactory` の標準実装へ分離されています。サービスは `IDataTransferContextFactory`、`IExecutorFactory`、`ITraceLogger` を受け取るコンストラクタも公開しており、テストや将来の DI コンテナから実行時依存関係を渡せます。
 
 ## 共有コンテキストとトランザクション
 

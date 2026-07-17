@@ -31,6 +31,7 @@ namespace DTFX.SmokeTests
             Run("executor factory injection", TestExecutorFactoryInjection, failures);
             Run("nested executor factory injection", TestNestedExecutorFactoryInjection, failures);
             Run("data transfer service injection", TestDataTransferServiceInjection, failures);
+            Run("trace logger injection", TestTraceLoggerInjection, failures);
             Run("Serilog file logging", TestSerilogFileLogging, failures);
             Run("XSD and examples", TestSchemasAndExamples, failures);
 
@@ -217,6 +218,29 @@ namespace DTFX.SmokeTests
             }
 
             throw new InvalidOperationException("Expected a disposed service to reject initialization.");
+        }
+
+        private static void TestTraceLoggerInjection()
+        {
+            var context = new DataTransferContext
+            {
+                RootElement = new XElement("Application", new XElement("Unsupported"))
+            };
+            var contextFactory = new StubDataTransferContextFactory(context, true);
+            var logger = new RecordingTraceLogger();
+
+            using (var service = new DataTransferService(
+                contextFactory,
+                new ExecutorFactory(),
+                logger))
+            {
+                AssertEqual(true, service.EnsureServiceConfigurations());
+                service.ExecuteService();
+
+                AssertEqual(ResultTypeCode.Error, service.ServiceResult);
+                AssertEqual(1, logger.Errors.Count);
+                AssertContains(logger.Errors[0], "Unsupported");
+            }
         }
 
         private static void AssertEvaluationFails(ExpressionEvaluator evaluator, string expression)
@@ -428,6 +452,48 @@ namespace DTFX.SmokeTests
                 CreateCount++;
                 context = _context;
                 return _result;
+            }
+        }
+
+        private sealed class RecordingTraceLogger : ITraceLogger
+        {
+            public RecordingTraceLogger()
+            {
+                Errors = new List<string>();
+                Exceptions = new List<Exception>();
+            }
+
+            public IList<string> Errors { get; private set; }
+
+            public IList<Exception> Exceptions { get; private set; }
+
+            public void WriteInfo(System.Reflection.MethodBase method, string message, params object[] args)
+            {
+            }
+
+            public void WriteWarning(System.Reflection.MethodBase method, string message, params object[] args)
+            {
+            }
+
+            public void WriteError(System.Reflection.MethodBase method, string message, params object[] args)
+            {
+                Errors.Add(FormatMessage(message, args));
+            }
+
+            public void WriteDebug(System.Reflection.MethodBase method, string message, params object[] args)
+            {
+            }
+
+            public void WriteException(Exception exception, string appendMessage = null)
+            {
+                Exceptions.Add(exception);
+            }
+
+            private static string FormatMessage(string message, object[] args)
+            {
+                return args == null || args.Length == 0
+                    ? message
+                    : string.Format(message, args);
             }
         }
 

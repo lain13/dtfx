@@ -16,6 +16,23 @@ namespace IF.Batch.DTFX.Service
     /// </summary>
     public sealed class DataTransferContextFactory : IDataTransferContextFactory
     {
+        private readonly ITraceLogger _logger;
+
+        public DataTransferContextFactory()
+            : this(new TraceLogger())
+        {
+        }
+
+        public DataTransferContextFactory(ITraceLogger logger)
+        {
+            if (logger == null)
+            {
+                throw new ArgumentNullException("logger");
+            }
+
+            _logger = logger;
+        }
+
         public bool TryCreate(out DataTransferContext context)
         {
             MethodBase method = MethodInfo.GetCurrentMethod();
@@ -50,8 +67,8 @@ namespace IF.Batch.DTFX.Service
             }
             catch (Exception ex)
             {
-                TraceLog.WriteError(method, "バッチ初期化中エラーが発生しました。", ex.Message);
-                TraceLog.WriteException(ex);
+                _logger.WriteError(method, "バッチ初期化中エラーが発生しました。", ex.Message);
+                _logger.WriteException(ex);
                 return false;
             }
         }
@@ -86,21 +103,21 @@ namespace IF.Batch.DTFX.Service
             AddConnectionStrings(context, jobConfig.ConnectionStrings.ConnectionStrings);
         }
 
-        private static bool TryLoadApplicationDefinition(
+        private bool TryLoadApplicationDefinition(
             DataTransferContext context,
             MethodBase method)
         {
             string xmlFilePath = Path.Combine(context.Appdirectory, context.Appid + ".xml");
             if (!File.Exists(xmlFilePath))
             {
-                TraceLog.WriteError(method, "SQL定義ファイルが存在しません。{0}", xmlFilePath);
+                _logger.WriteError(method, "SQL定義ファイルが存在しません。{0}", xmlFilePath);
                 return false;
             }
 
             context.RootElement = XElement.Load(xmlFilePath);
             if (context.RootElement.Name != "Application")
             {
-                TraceLog.WriteError(method, "SQL定義ファイルが正しくありません。{0}", xmlFilePath);
+                _logger.WriteError(method, "SQL定義ファイルが正しくありません。{0}", xmlFilePath);
                 return false;
             }
 
@@ -164,7 +181,7 @@ namespace IF.Batch.DTFX.Service
             return encoding;
         }
 
-        private static bool TryEnsureDirectory(
+        private bool TryEnsureDirectory(
             MethodBase method,
             string path,
             string errorMessage)
@@ -181,8 +198,8 @@ namespace IF.Batch.DTFX.Service
             }
             catch (Exception ex)
             {
-                TraceLog.WriteError(method, errorMessage, path);
-                TraceLog.WriteException(ex);
+                _logger.WriteError(method, errorMessage, path);
+                _logger.WriteException(ex);
                 return false;
             }
         }

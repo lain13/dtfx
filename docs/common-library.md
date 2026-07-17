@@ -24,7 +24,7 @@ dotnet build IF.Batch.sln --no-restore -c Release -p:Platform=x86
 | 名前空間 | 主な型 | 用途 |
 |---|---|---|
 | `IF.Batch.Common.Configuration` | `AppConfigConstants`, `ResultTypeCode` | 構成キーとジョブ結果コード |
-| `IF.Batch.Common.Diagnostics` | `TraceLog`, `SerilogTraceLogWriter` | CSV 形式のファイルログ |
+| `IF.Batch.Common.Diagnostics` | `ITraceLogger`, `TraceLogger`, `TraceLog`, `SerilogTraceLogWriter` | 注入可能なログ境界と CSV 形式のファイルログ |
 | `IF.Batch.Common.Helper` | `CsvReader`, `CsvWriter`, `ConcurrentCsvWriter` | CSV / GZIP の読み書き |
 | `IF.Batch.Common.Helper` | `FileHelper`, `LogicalStringComparer` | 枝番、自然順、シグネチャ、パステンプレート |
 | `IF.Batch.Common.Helper` | `ConfigurationManagerHelper`, `InputArguments` | 構成のマージとコマンドライン解析 |
@@ -64,7 +64,9 @@ GZIP を使用する場合は reader / writer の `useGzip` を `true` にしま
 
 ## ログ
 
-`TraceLog` は最初の書き込み時に AppSettings を読み込みます。`trace.templatepath` が空なら `NullTraceLogWriter`、設定されていれば `SerilogTraceLogWriter` を使用します。
+`ITraceLogger` はサービスなどのアプリケーションコードへ注入するログ契約です。標準実装の `TraceLogger` は既存の静的 `TraceLog` API へ処理を委譲するため、従来のログ設定と出力形式を維持したままテスト用実装へ差し替えられます。
+
+`TraceLog` は最初の書き込み時に AppSettings を読み込みます。`trace.templatepath` が空なら `NullTraceLogWriter`、設定されていれば `SerilogTraceLogWriter` を使用します。静的 API は既存コードとの互換性のため引き続き利用できます。
 
 ```csharp
 using System.Reflection;

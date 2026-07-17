@@ -15,6 +15,7 @@ namespace IF.Batch.DTFX.Service
     {
         private readonly IDataTransferContextFactory _contextFactory;
         private readonly IExecutorFactory _executorFactory;
+        private readonly ITraceLogger _logger;
         private bool _disposed;
 
         public DataTransferContext ServiceContext { get; private set; }
@@ -22,13 +23,26 @@ namespace IF.Batch.DTFX.Service
         public ResultTypeCode ServiceResult { get; private set; }
 
         public DataTransferService()
-            : this(new DataTransferContextFactory(), new ExecutorFactory())
+            : this(new TraceLogger())
+        {
+        }
+
+        private DataTransferService(ITraceLogger logger)
+            : this(new DataTransferContextFactory(logger), new ExecutorFactory(), logger)
         {
         }
 
         public DataTransferService(
             IDataTransferContextFactory contextFactory,
             IExecutorFactory executorFactory)
+            : this(contextFactory, executorFactory, new TraceLogger())
+        {
+        }
+
+        public DataTransferService(
+            IDataTransferContextFactory contextFactory,
+            IExecutorFactory executorFactory,
+            ITraceLogger logger)
         {
             if (contextFactory == null)
             {
@@ -38,9 +52,14 @@ namespace IF.Batch.DTFX.Service
             {
                 throw new ArgumentNullException("executorFactory");
             }
+            if (logger == null)
+            {
+                throw new ArgumentNullException("logger");
+            }
 
             _contextFactory = contextFactory;
             _executorFactory = executorFactory;
+            _logger = logger;
         }
 
         public virtual bool EnsureServiceConfigurations()
@@ -87,7 +106,7 @@ namespace IF.Batch.DTFX.Service
             catch (AppConfigurationException ex)
             {
                 ServiceResult = ResultTypeCode.Error;
-                TraceLog.WriteError(method, ex.Message);
+                _logger.WriteError(method, ex.Message);
             }
             catch
             {
