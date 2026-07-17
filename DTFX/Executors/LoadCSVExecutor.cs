@@ -119,8 +119,6 @@ namespace IF.Batch.DTFX.Executors
         {
             ResultTypeCode result = ResultTypeCode.Success;
             MethodBase method = MethodInfo.GetCurrentMethod();
-            ApplicationExecutor executor = new ApplicationExecutor();
-            executor.ServiceContext = this.ServiceContext;
             FileInfo backupedFile = null;
             if (!string.IsNullOrEmpty(ServiceContext.BackupDirectory))
             {

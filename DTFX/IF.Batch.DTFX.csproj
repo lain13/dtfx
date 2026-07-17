@@ -161,9 +161,11 @@
     <Compile Include="Exceptions\AppConfigurationException.cs" />
     <Compile Include="Executors\AppExitExecutor.cs" />
     <Compile Include="Executors\ApplicationExecutor.cs" />
+    <Compile Include="Executors\ExecutorFactory.cs" />
     <Compile Include="Executors\ExecutorBase.cs" />
     <Compile Include="Executors\ForEachExecutor.cs" />
     <Compile Include="Executors\IfExecutor.cs" />
+    <Compile Include="Executors\IExecutorFactory.cs" />
     <Compile Include="Executors\LocalDBDeleteExecutor.cs" />
     <Compile Include="Executors\LocalDBInsertExecutor.cs" />
     <Compile Include="Executors\LocalDBSelectExecutor.cs" />
@@ -202,7 +204,9 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Service\DataTransferContext.cs" />
+    <Compile Include="Service\DataTransferContextFactory.cs" />
     <Compile Include="Service\DataTransferService.cs" />
+    <Compile Include="Service\IDataTransferContextFactory.cs" />
     <Compile Include="Service\IUseServiceContext.cs" />
     <Compile Include="Helper\SharedVariable.cs" />
   </ItemGroup>

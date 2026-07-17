@@ -34,6 +34,23 @@ namespace IF.Batch.DTFX.Executors
     /// </summary>
     public class ForEachExecutor : ExecutorBase
     {
+        private readonly IExecutorFactory _executorFactory;
+
+        public ForEachExecutor()
+            : this(new ExecutorFactory())
+        {
+        }
+
+        public ForEachExecutor(IExecutorFactory executorFactory)
+        {
+            if (executorFactory == null)
+            {
+                throw new ArgumentNullException("executorFactory");
+            }
+
+            _executorFactory = executorFactory;
+        }
+
         /// <summary>
         /// ForEachループを実行します。
         /// データソース(fromFile/fromTable/fromVariable)に応じた繰り返し処理を行い、
@@ -103,8 +120,7 @@ namespace IF.Batch.DTFX.Executors
         {
             ResultTypeCode result = ResultTypeCode.Success;
             MethodBase method = MethodInfo.GetCurrentMethod();
-            ApplicationExecutor executor = new ApplicationExecutor();
-            executor.ServiceContext = this.ServiceContext;
+            var executor = _executorFactory.CreateApplicationExecutor(ServiceContext);
             DataTable table = ServiceContext.GetLocalDB().SelectAllTable(element.FromTable);
             if (table == null || table.Rows.Count == 0)
             {
@@ -174,8 +190,7 @@ namespace IF.Batch.DTFX.Executors
                 TraceLog.WriteWarning(method, "[{0}]変数が存在しません。", element.FromVariable);
                 return result;
             }
-            ApplicationExecutor executor = new ApplicationExecutor();
-            executor.ServiceContext = this.ServiceContext;
+            var executor = _executorFactory.CreateApplicationExecutor(ServiceContext);
             object obj = ServiceContext.SharedVariable.GetValue(element.FromVariable);
             if (!(obj is IEnumerable))
             {
@@ -290,8 +305,7 @@ namespace IF.Batch.DTFX.Executors
         {
             ResultTypeCode result = ResultTypeCode.Success;
             MethodBase method = MethodInfo.GetCurrentMethod();
-            ApplicationExecutor executor = new ApplicationExecutor();
-            executor.ServiceContext = this.ServiceContext;
+            var executor = _executorFactory.CreateApplicationExecutor(ServiceContext);
             FileInfo backupedFile = null;
             if (!string.IsNullOrEmpty(ServiceContext.BackupDirectory))
             {

@@ -24,6 +24,7 @@
 - `If` の式評価エンジンを旧式の Microsoft.JScript から JexlNet へ変更し、JEXL 文法のドキュメントとサンプルを更新
 - Git リポジトリに不要な Subversion / AnkhSVN メタデータを削除
 - Common のレガシー変更履歴コメントと空の XML ドキュメントを整理し、公開 API の説明を補完
+- Executor の生成責務を `IExecutorFactory` に分離し、ネストした制御フローとサービスから差し替え可能に変更
 
 ### Fixed
 
@@ -38,3 +39,4 @@
 - コードコメントとエラーメッセージの誤記
 - `x86` ソリューション構成で `IF.Batch.Common` がビルド対象から外れていたマッピング
 - スモークテスト出力に JEXL 実行時依存の `System.Memory.dll` が含まれない問題
+- CSV 読み込み時に使用されていない `ApplicationExecutor` を生成していた処理

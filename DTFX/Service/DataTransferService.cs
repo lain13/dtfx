@@ -33,6 +33,9 @@ namespace IF.Batch.DTFX.Service
 {
     public class DataTransferService : IService
     {
+        private readonly IDataTransferContextFactory _contextFactory;
+        private readonly IExecutorFactory _executorFactory;
+
         /// <summary>
         /// アプリケーション共有コンテキスト
         /// </summary>
@@ -52,7 +55,25 @@ namespace IF.Batch.DTFX.Service
         }
 
         public DataTransferService()
+            : this(new DataTransferContextFactory(), new ExecutorFactory())
         {
+        }
+
+        public DataTransferService(
+            IDataTransferContextFactory contextFactory,
+            IExecutorFactory executorFactory)
+        {
+            if (contextFactory == null)
+            {
+                throw new ArgumentNullException("contextFactory");
+            }
+            if (executorFactory == null)
+            {
+                throw new ArgumentNullException("executorFactory");
+            }
+
+            _contextFactory = contextFactory;
+            _executorFactory = executorFactory;
         }
 
         /// <summary>
@@ -63,7 +84,11 @@ namespace IF.Batch.DTFX.Service
         {
             MethodBase method = MethodInfo.GetCurrentMethod();
 
-            ServiceContext = new DataTransferContext();
+            ServiceContext = _contextFactory.Create();
+            if (ServiceContext == null)
+            {
+                throw new InvalidOperationException("The context factory returned null.");
+            }
 
             ServiceContext.Appid = ConfigurationManager.AppSettings[C.AppSettings.Appid];
             string value = null;
@@ -250,8 +275,7 @@ namespace IF.Batch.DTFX.Service
 
             try
             {
-                ApplicationExecutor executor = new ApplicationExecutor();
-                executor.ServiceContext = this.ServiceContext;
+                var executor = _executorFactory.CreateApplicationExecutor(ServiceContext);
                 this.ServiceResult = executor.Execute(ServiceContext.RootElement);
             }
             catch (AppExitException ex)

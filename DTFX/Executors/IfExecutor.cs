@@ -29,8 +29,25 @@ namespace IF.Batch.DTFX.Executors
     /// </summary>
     public class IfExecutor : ExecutorBase
     {
+        private readonly IExecutorFactory _executorFactory;
+
         // JEXL式を解析する
         private readonly ExpressionEvaluator _evaluator = new ExpressionEvaluator();
+
+        public IfExecutor()
+            : this(new ExecutorFactory())
+        {
+        }
+
+        public IfExecutor(IExecutorFactory executorFactory)
+        {
+            if (executorFactory == null)
+            {
+                throw new ArgumentNullException("executorFactory");
+            }
+
+            _executorFactory = executorFactory;
+        }
 
         /// <summary>
         /// 条件式をJEXLで評価し、結果が'true'の場合に下位 XML要素を実行します。
@@ -58,8 +75,7 @@ namespace IF.Batch.DTFX.Executors
             {
                 return ResultTypeCode.Success;
             }
-            ApplicationExecutor executor = new ApplicationExecutor();
-            executor.ServiceContext = ServiceContext;
+            var executor = _executorFactory.CreateApplicationExecutor(ServiceContext);
             return executor.Execute(element.RawElement);
         }
 

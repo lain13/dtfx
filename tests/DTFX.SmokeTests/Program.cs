@@ -8,8 +8,11 @@ using System.Xml.Schema;
 using IF.Batch.Common.Configuration;
 using IF.Batch.Common.Diagnostics;
 using IF.Batch.Common.Helper;
+using IF.Batch.Common.Service;
 using IF.Batch.DTFX.Executors;
+using IF.Batch.DTFX.Exceptions;
 using IF.Batch.DTFX.Helper;
+using IF.Batch.DTFX.Service;
 
 namespace DTFX.SmokeTests
 {
@@ -24,6 +27,9 @@ namespace DTFX.SmokeTests
             Run("CSV formatting", TestCsvFormatting, failures);
             Run("CSV enumerable is read once", TestCsvEnumerableIsReadOnce, failures);
             Run("expression evaluation", TestExpressionEvaluation, failures);
+            Run("executor factory mappings", TestExecutorFactoryMappings, failures);
+            Run("executor factory injection", TestExecutorFactoryInjection, failures);
+            Run("nested executor factory injection", TestNestedExecutorFactoryInjection, failures);
             Run("Serilog file logging", TestSerilogFileLogging, failures);
             Run("XSD and examples", TestSchemasAndExamples, failures);
 
@@ -110,6 +116,73 @@ namespace DTFX.SmokeTests
             AssertEqual("7", evaluator.Evaluate("1 + 2 * 3"));
             AssertEqual("fallback", evaluator.Evaluate("false ? 'selected' : 'fallback'"));
             AssertEvaluationFails(evaluator, "new ActiveXObject('WScript.Shell')");
+        }
+
+        private static void TestExecutorFactoryMappings()
+        {
+            var factory = new ExecutorFactory();
+            using (var context = new DataTransferContext())
+            {
+                ExecutorBase sqlExecutor = factory.CreateExecutor(new XElement("SqlSelect"), context);
+                AssertEqual(typeof(SqlSelectExecutor), sqlExecutor.GetType());
+                AssertSame(context, sqlExecutor.ServiceContext);
+
+                ExecutorBase ifExecutor = factory.CreateExecutor(new XElement("If"), context);
+                AssertEqual(typeof(IfExecutor), ifExecutor.GetType());
+                AssertSame(context, ifExecutor.ServiceContext);
+
+                try
+                {
+                    factory.CreateExecutor(new XElement("Unsupported"), context);
+                }
+                catch (AppConfigurationException)
+                {
+                    return;
+                }
+            }
+
+            throw new InvalidOperationException("Expected an unsupported XML element to be rejected.");
+        }
+
+        private static void TestExecutorFactoryInjection()
+        {
+            var factory = new RecordingExecutorFactory(
+                ResultTypeCode.Success,
+                ResultTypeCode.Warning,
+                ResultTypeCode.Error);
+
+            using (var context = new DataTransferContext())
+            {
+                var executor = new ApplicationExecutor(factory) { ServiceContext = context };
+                var application = new XElement("Application",
+                    new XElement("First"),
+                    new XElement("Second"),
+                    new XElement("Third"));
+
+                AssertEqual(ResultTypeCode.Error, executor.Execute(application));
+                AssertEqual("First,Second,Third", string.Join(",", factory.ExecutedElementNames));
+                AssertEqual(3, factory.ServiceContexts.Count);
+                foreach (DataTransferContext serviceContext in factory.ServiceContexts)
+                {
+                    AssertSame(context, serviceContext);
+                }
+            }
+        }
+
+        private static void TestNestedExecutorFactoryInjection()
+        {
+            var factory = new RecordingExecutorFactory(ResultTypeCode.Warning);
+            using (var context = new DataTransferContext())
+            {
+                var executor = new IfExecutor(factory) { ServiceContext = context };
+                var ifElement = new XElement("If",
+                    new XAttribute("test", "true"),
+                    new XElement("Nested"));
+
+                AssertEqual(ResultTypeCode.Warning, executor.Execute(ifElement));
+                AssertEqual("Nested", string.Join(",", factory.ExecutedElementNames));
+                AssertSame(context, factory.ServiceContexts[0]);
+            }
         }
 
         private static void AssertEvaluationFails(ExpressionEvaluator evaluator, string expression)
@@ -206,6 +279,14 @@ namespace DTFX.SmokeTests
             }
         }
 
+        private static void AssertSame(object expected, object actual)
+        {
+            if (!object.ReferenceEquals(expected, actual))
+            {
+                throw new InvalidOperationException("Expected both values to reference the same object.");
+            }
+        }
+
         private sealed class TestTraceLogConfiguration : ITraceLogConfiguration
         {
             private readonly string _path;
@@ -235,6 +316,63 @@ namespace DTFX.SmokeTests
             public override ResultTypeCode Execute(XElement parameter)
             {
                 return ResultTypeCode.Success;
+            }
+        }
+
+        private sealed class RecordingExecutorFactory : IExecutorFactory
+        {
+            private readonly Queue<ResultTypeCode> _results;
+
+            public RecordingExecutorFactory(params ResultTypeCode[] results)
+            {
+                _results = new Queue<ResultTypeCode>(results);
+                ExecutedElementNames = new List<string>();
+                ServiceContexts = new List<DataTransferContext>();
+            }
+
+            public IList<string> ExecutedElementNames { get; private set; }
+
+            public IList<DataTransferContext> ServiceContexts { get; private set; }
+
+            public ITaskExecutor<XElement> CreateApplicationExecutor(DataTransferContext serviceContext)
+            {
+                return new ApplicationExecutor(this) { ServiceContext = serviceContext };
+            }
+
+            public ExecutorBase CreateExecutor(XElement element, DataTransferContext serviceContext)
+            {
+                if (_results.Count == 0)
+                {
+                    throw new InvalidOperationException("No executor result was configured.");
+                }
+
+                var executor = new RecordingExecutor(
+                    _results.Dequeue(),
+                    delegate (XElement executedElement)
+                    {
+                        ExecutedElementNames.Add(executedElement.Name.LocalName);
+                        ServiceContexts.Add(serviceContext);
+                    });
+                executor.ServiceContext = serviceContext;
+                return executor;
+            }
+        }
+
+        private sealed class RecordingExecutor : ExecutorBase
+        {
+            private readonly ResultTypeCode _result;
+            private readonly Action<XElement> _onExecute;
+
+            public RecordingExecutor(ResultTypeCode result, Action<XElement> onExecute)
+            {
+                _result = result;
+                _onExecute = onExecute;
+            }
+
+            public override ResultTypeCode Execute(XElement parameter)
+            {
+                _onExecute(parameter);
+                return _result;
             }
         }
 

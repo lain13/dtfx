@@ -43,7 +43,7 @@ flowchart LR
 
 ## Element と Executor
 
-`Elements/` のクラスは XML 属性を保持するデータモデル、`Executors/` のクラスは実行ロジックです。`ApplicationExecutor.CreateExecutor` が要素名を Executor にマッピングします。
+`Elements/` のクラスは XML 属性を保持するデータモデル、`Executors/` のクラスは実行ロジックです。`ApplicationExecutor` は生成処理を `IExecutorFactory` に委譲し、標準実装の `ExecutorFactory` が要素名と Executor の登録を一元管理します。`If` と `ForEach` の子要素にも同じファクトリが引き継がれるため、ネストした処理を含めて生成方法を差し替えられます。
 
 サポートする処理は次のとおりです。
 
@@ -55,6 +55,8 @@ flowchart LR
 - ファイル・その他: LoadCSV、ExecuteCommand、TraceLog、ZipArchive、AddFile
 
 要素名と属性の詳細は [`xml-elements.md`](xml-elements.md) を参照してください。複数の処理結果は `Error > Warning > Success` の優先順位で統合されます。
+
+`DataTransferService` は既定コンストラクタで標準構成を組み立てます。また、`IDataTransferContextFactory` と `IExecutorFactory` を受け取るコンストラクタを公開しており、テストや将来の DI コンテナから実行時依存関係を渡せます。
 
 ## 共有コンテキストとトランザクション
 
